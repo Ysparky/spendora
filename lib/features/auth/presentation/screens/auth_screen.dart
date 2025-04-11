@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class AuthScreen extends ConsumerWidget {
   const AuthScreen({super.key});
@@ -21,8 +22,16 @@ class AuthScreen extends ConsumerWidget {
                     ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Gestiona tus finanzas de manera inteligente',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 48),
-              ElevatedButton.icon(
+              FilledButton.icon(
                 onPressed: () {
                   // TODO: Implementar Google Sign In
                 },
@@ -32,10 +41,26 @@ class AuthScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: Implementar Email Sign In
+                  context.push('/register');
                 },
                 icon: const Icon(Icons.email_outlined),
-                label: const Text('Continuar con Email'),
+                label: const Text('Registrarse con Email'),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '¿Ya tienes una cuenta?',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.push('/login');
+                    },
+                    child: const Text('Iniciar sesión'),
+                  ),
+                ],
               ),
             ],
           ),
