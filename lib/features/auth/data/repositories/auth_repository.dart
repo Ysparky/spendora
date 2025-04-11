@@ -47,19 +47,30 @@ class FirebaseAuthRepository implements IAuthRepository {
 
   @override
   Future<UserCredential> signInWithGoogle() async {
-    final googleUser = await googleSignIn.signIn();
-    final googleAuth = await googleUser?.authentication;
+    try {
+      final googleUser = await googleSignIn.signIn();
 
-    if (googleAuth?.accessToken == null || googleAuth?.idToken == null) {
-      throw Exception('Could not get auth details from Google');
+      // User canceled the sign-in process
+      if (googleUser == null) {
+        throw Exception('sign_in_canceled');
+      }
+
+      final googleAuth = await googleUser.authentication;
+
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        throw Exception('Failed to get Google authentication tokens');
+      }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return firebaseAuth.signInWithCredential(credential);
+    } catch (e) {
+      // Let the error propagate for the controller to handle
+      rethrow;
     }
-
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-
-    return firebaseAuth.signInWithCredential(credential);
   }
 
   @override

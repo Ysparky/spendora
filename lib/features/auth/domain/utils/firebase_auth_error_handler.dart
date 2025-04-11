@@ -49,4 +49,31 @@ class FirebaseAuthErrorHandler {
             'Ha ocurrido un error. Por favor intenta de nuevo';
     }
   }
+
+  /// Handles errors specific to Google Sign-In
+  static String handleGoogleSignInError(Exception exception) {
+    if (exception is FirebaseAuthException) {
+      return handleError(exception);
+    } else if (exception
+        .toString()
+        .contains('com.google.android.gms.common.api.ApiException: 10:')) {
+      // Common error when Google Play Services need update
+      return 'Error en los servicios de Google. Actualiza Google Play Services';
+    } else if (exception
+        .toString()
+        .contains('com.google.android.gms.common.api.ApiException: 16:')) {
+      // Error related to Google API / network availability
+      return 'Error al conectarse con Google. Verifica tu red';
+    } else if (exception.toString().contains('canceled')) {
+      return 'Inicio de sesión cancelado';
+    } else if (exception.toString().contains('network_error')) {
+      return 'Error de red. Verifica tu conexión a internet';
+    } else if (exception.toString().contains('sign_in_failed')) {
+      return 'Inicio de sesión fallido. Inténtalo de nuevo';
+    } else if (exception.toString().contains('sign_in_canceled')) {
+      return 'Inicio de sesión cancelado';
+    } else {
+      return 'Error al iniciar sesión con Google: $exception';
+    }
+  }
 }

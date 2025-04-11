@@ -1,17 +1,44 @@
+// ignore_for_file: prefer_int_literals
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendora/features/auth/presentation/controllers/social_auth_controller.dart';
 import 'package:spendora/features/auth/presentation/widgets/social_sign_in_button.dart';
 
-class AuthScreen extends ConsumerWidget {
+class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends ConsumerState<AuthScreen> {
+  @override
+  Widget build(BuildContext context) {
     final googleSignInStatus = ref.watch(googleSignInControllerProvider);
     final isGoogleSignInLoading =
         googleSignInStatus == SocialAuthStatus.loading;
+    final showGoogleSignInError = googleSignInStatus == SocialAuthStatus.error;
+
+    // Listen for status changes to show error messages
+    ref.listen(googleSignInControllerProvider, (previous, current) {
+      if (current == SocialAuthStatus.error) {
+        final errorMessage =
+            ref.read(googleSignInControllerProvider.notifier).errorMessage;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              errorMessage.isNotEmpty
+                  ? errorMessage
+                  : 'Ocurrió un error durante el inicio de sesión',
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -37,10 +64,28 @@ class AuthScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
+              if (showGoogleSignInError)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    ref
+                        .read(googleSignInControllerProvider.notifier)
+                        .errorMessage,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               SocialSignInButton(
                 provider: SocialProvider.google,
                 isLoading: isGoogleSignInLoading,
                 onPressed: () {
+                  // Reset any previous errors
+                  if (showGoogleSignInError) {
+                    ref.read(googleSignInControllerProvider.notifier).reset();
+                  }
                   ref.read(googleSignInControllerProvider.notifier).signIn();
                 },
               ),
@@ -57,9 +102,10 @@ class AuthScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   side: BorderSide(
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                  ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withOpacity(0.5)),
                   backgroundColor: Colors.transparent,
                 ),
                 child: const Row(
