@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spendora/config/theme/app_theme.dart';
+import 'package:spendora/core/theme/app_theme.dart';
 
 part 'theme_provider.g.dart';
 

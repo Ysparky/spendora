@@ -1,10 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:spendora/firebase_options.dart';
-import 'package:spendora/config/theme/app_theme.dart';
-import 'package:spendora/presentation/screens/theme_showcase.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/screens/auth_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +27,7 @@ class SpendoraApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // We'll make this configurable later
-      home: const ThemeShowcase(),
+      home: const AuthScreen(),
     );
   }
 }
