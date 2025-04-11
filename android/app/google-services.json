@@ -12,7 +12,20 @@
           "package_name": "com.example.spendora"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "961436030319-5aac14n7dqhv0qe5tuj054qkikmd7sb8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.spendora",
+            "certificate_hash": "08b13f0ead19e177245954d3c8c12d216da8385d"
+          }
+        },
+        {
+          "client_id": "961436030319-d3vn75l0mhsdnu928ir1lphip01lvh8a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD2C41bh-Ityus1MY94UZs5S6YFZ8oTr8Q"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "961436030319-d3vn75l0mhsdnu928ir1lphip01lvh8a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "961436030319-7lekiptvlkfdfsvnajjg1q55hcj7a28f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.spendora"
+              }
+            }
+          ]
         }
       }
     }

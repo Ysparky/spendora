@@ -1,26 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_controller.dart';
+part of 'social_auth_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'12af37d5def7957d3e3bc7cbd85bd179f149ccbc';
+String _$googleSignInControllerHash() =>
+    r'2ef9654d309167b216c737bfc37444aacd460a15';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    AutoDisposeStreamNotifierProvider<AuthController, User?>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [GoogleSignInController].
+@ProviderFor(GoogleSignInController)
+final googleSignInControllerProvider = AutoDisposeNotifierProvider<
+    GoogleSignInController, SocialAuthStatus>.internal(
+  GoogleSignInController.new,
+  name: r'googleSignInControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$googleSignInControllerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = AutoDisposeStreamNotifier<User?>;
+typedef _$GoogleSignInController = AutoDisposeNotifier<SocialAuthStatus>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

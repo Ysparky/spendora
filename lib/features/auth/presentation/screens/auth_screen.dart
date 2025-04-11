@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:spendora/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:spendora/features/auth/presentation/controllers/social_auth_controller.dart';
+import 'package:spendora/features/auth/presentation/widgets/social_sign_in_button.dart';
 
 class AuthScreen extends ConsumerWidget {
   const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final googleSignInStatus = ref.watch(googleSignInControllerProvider);
+    final isGoogleSignInLoading =
+        googleSignInStatus == SocialAuthStatus.loading;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -32,20 +37,39 @@ class AuthScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              FilledButton.icon(
+              SocialSignInButton(
+                provider: SocialProvider.google,
+                isLoading: isGoogleSignInLoading,
                 onPressed: () {
-                  ref.read(authControllerProvider.notifier).signInWithGoogle();
+                  ref.read(googleSignInControllerProvider.notifier).signIn();
                 },
-                icon: const Icon(Icons.g_mobiledata),
-                label: const Text('Continuar con Google'),
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
+              OutlinedButton(
                 onPressed: () {
                   context.push('/register');
                 },
-                icon: const Icon(Icons.email_outlined),
-                label: const Text('Registrarse con Email'),
+                style: OutlinedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  side: BorderSide(
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                  ),
+                  backgroundColor: Colors.transparent,
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.email_outlined),
+                    SizedBox(width: 8),
+                    Text('Registrarse con Email'),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               Row(
