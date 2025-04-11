@@ -5,8 +5,8 @@ import 'package:spendora/features/auth/presentation/controllers/auth_error_contr
 /// Widget that listens for auth errors and shows a SnackBar
 class AuthErrorListener extends ConsumerWidget {
   const AuthErrorListener({
-    super.key,
     required this.child,
+    super.key,
   });
 
   final Widget child;

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:spendora/core/router/app_router.dart';
 import 'package:spendora/core/theme/app_theme.dart';
 import 'package:spendora/features/auth/presentation/widgets/auth_error_listener.dart';
@@ -22,6 +23,8 @@ class SpendoraApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
     return MaterialApp.router(
       routerConfig: router,
       title: 'Spendora',

@@ -17,8 +17,8 @@ T _$identity<T>(T value) => value;
 mixin _$UserModel {
   String get id;
   String get email;
-  String? get name;
   DateTime get createdAt;
+  String? get name;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -37,18 +37,18 @@ mixin _$UserModel {
             other is UserModel &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.name, name) || other.name == name) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.name, name) || other.name == name));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, name, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, email, createdAt, name);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, name: $name, createdAt: $createdAt)';
+    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name)';
   }
 }
 
@@ -57,7 +57,7 @@ abstract mixin class $UserModelCopyWith<$Res> {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) =
       _$UserModelCopyWithImpl;
   @useResult
-  $Res call({String id, String email, String? name, DateTime createdAt});
+  $Res call({String id, String email, DateTime createdAt, String? name});
 }
 
 /// @nodoc
@@ -74,8 +74,8 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? email = null,
-    Object? name = freezed,
     Object? createdAt = null,
+    Object? name = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -86,14 +86,14 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
           ? _self.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      name: freezed == name
-          ? _self.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      name: freezed == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -104,8 +104,8 @@ class _UserModel extends UserModel {
   const _UserModel(
       {required this.id,
       required this.email,
-      this.name,
-      required this.createdAt})
+      required this.createdAt,
+      this.name})
       : super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
@@ -115,9 +115,9 @@ class _UserModel extends UserModel {
   @override
   final String email;
   @override
-  final String? name;
-  @override
   final DateTime createdAt;
+  @override
+  final String? name;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -141,18 +141,18 @@ class _UserModel extends UserModel {
             other is _UserModel &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.name, name) || other.name == name) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.name, name) || other.name == name));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, name, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, email, createdAt, name);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, name: $name, createdAt: $createdAt)';
+    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name)';
   }
 }
 
@@ -164,7 +164,7 @@ abstract mixin class _$UserModelCopyWith<$Res>
       __$UserModelCopyWithImpl;
   @override
   @useResult
-  $Res call({String id, String email, String? name, DateTime createdAt});
+  $Res call({String id, String email, DateTime createdAt, String? name});
 }
 
 /// @nodoc
@@ -181,8 +181,8 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? email = null,
-    Object? name = freezed,
     Object? createdAt = null,
+    Object? name = freezed,
   }) {
     return _then(_UserModel(
       id: null == id
@@ -193,14 +193,14 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
           ? _self.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      name: freezed == name
-          ? _self.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      name: freezed == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
