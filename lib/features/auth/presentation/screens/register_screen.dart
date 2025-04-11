@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:spendora/features/auth/presentation/controllers/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -13,75 +14,48 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _nameController = TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _nameController.dispose();
     super.dispose();
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu email';
-    }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Por favor ingresa un email válido';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu contraseña';
-    }
-    if (value.length < 8) {
-      return 'La contraseña debe tener al menos 8 caracteres';
-    }
-    return null;
-  }
-
-  String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor confirma tu contraseña';
-    }
-    if (value != _passwordController.text) {
-      return 'Las contraseñas no coinciden';
-    }
-    return null;
-  }
-
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu nombre';
-    }
-    return null;
-  }
-
-  void _onSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implementar registro
-      debugPrint('Nombre: ${_nameController.text}');
-      debugPrint('Email: ${_emailController.text}');
+  Future<void> _handleRegister() async {
+    if (_formKey.currentState!.validate()) {
+      await ref.read(authControllerProvider.notifier).registerWithEmail(
+            _emailController.text,
+            _passwordController.text,
+            name: _nameController.text,
+            confirmPassword: _confirmPasswordController.text,
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        },
+      );
+    });
+
+    final isLoading = ref.watch(authControllerProvider).isLoading;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear cuenta'),
+        title: const Text('Crear Cuenta'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -91,109 +65,73 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  '¡Bienvenido!',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Crea una cuenta para comenzar a gestionar tus finanzas',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.textTheme.bodySmall?.color,
-                  ),
-                ),
-                const SizedBox(height: 32),
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Nombre completo',
-                    prefixIcon: Icon(Icons.person_outline),
+                    labelText: 'Nombre',
+                    hintText: 'Ingresa tu nombre',
                   ),
                   textCapitalization: TextCapitalization.words,
-                  validator: _validateName,
-                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.name],
+                  validator: (_) => null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                    hintText: 'Ingresa tu email',
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  validator: _validateEmail,
-                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.email],
+                  validator: (_) => null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
+                    hintText: 'Ingresa tu contraseña',
+                    helperText:
+                        'Mínimo 8 caracteres, una mayúscula y un número',
                   ),
-                  obscureText: !_isPasswordVisible,
-                  validator: _validatePassword,
-                  textInputAction: TextInputAction.next,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.newPassword],
+                  validator: (_) => null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _confirmPasswordController,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isConfirmPasswordVisible
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isConfirmPasswordVisible =
-                              !_isConfirmPasswordVisible;
-                        });
-                      },
-                    ),
+                  decoration: const InputDecoration(
+                    labelText: 'Confirmar Contraseña',
+                    hintText: 'Confirma tu contraseña',
                   ),
-                  obscureText: !_isConfirmPasswordVisible,
-                  validator: _validateConfirmPassword,
-                  textInputAction: TextInputAction.done,
+                  obscureText: true,
+                  validator: (_) => null,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: _onSubmit,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Crear cuenta'),
-                  ),
+                  onPressed: isLoading ? null : _handleRegister,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Crear Cuenta'),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '¿Ya tienes una cuenta?',
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    const Text('¿Ya tienes una cuenta?'),
                     TextButton(
                       onPressed: () {
                         context.push('/login');
                       },
-                      child: const Text('Iniciar sesión'),
+                      child: const Text('Iniciar Sesión'),
                     ),
                   ],
                 ),

@@ -1,6 +1,9 @@
+// ignore_for_file: prefer_int_literals
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:spendora/features/auth/presentation/controllers/auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -13,7 +16,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
   bool _rememberMe = false;
 
   @override
@@ -23,39 +25,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu email';
+  Future<void> _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      await ref.read(authControllerProvider.notifier).signInWithEmail(
+            _emailController.text,
+            _passwordController.text,
+          );
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Por favor ingresa un email válido';
-    }
-    return null;
   }
 
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu contraseña';
-    }
-    return null;
-  }
-
-  void _onSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implementar login
-      debugPrint('Email: ${_emailController.text}');
-      debugPrint('Remember me: $_rememberMe');
-    }
+  Future<void> _handlePasswordReset() async {
+    await ref.read(authControllerProvider.notifier).sendPasswordResetEmail(
+          _emailController.text,
+        );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Se ha enviado un email para restablecer tu contraseña'),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        },
+      );
+    });
+
+    final isLoading = ref.watch(authControllerProvider).isLoading;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Iniciar sesión'),
+        title: const Text('Iniciar Sesión'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -65,54 +72,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  '¡Bienvenido de vuelta!',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Inicia sesión para continuar gestionando tus finanzas',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.textTheme.bodySmall?.color,
-                  ),
-                ),
-                const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                    hintText: 'Ingresa tu email',
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  validator: _validateEmail,
-                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.email],
+                  validator: (_) => null, // Validation handled by controller
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
+                    hintText: 'Ingresa tu contraseña',
+                    helperText:
+                        'Mínimo 8 caracteres, una mayúscula y un número',
                   ),
-                  obscureText: !_isPasswordVisible,
-                  validator: _validatePassword,
-                  textInputAction: TextInputAction.done,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.password],
+                  validator: (_) => null, // Validation handled by controller
                 ),
-                const SizedBox(height: 8),
                 Row(
                   children: [
                     Checkbox(
@@ -126,58 +108,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Text('Recordarme'),
                     const Spacer(),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implementar recuperación de contraseña
-                      },
+                      onPressed: _handlePasswordReset,
                       child: const Text('¿Olvidaste tu contraseña?'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: _onSubmit,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Iniciar sesión'),
-                  ),
+                  onPressed: isLoading ? null : _handleLogin,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Iniciar Sesión'),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'O',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ),
-                    const Expanded(
-                      child: Divider(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Implementar Google Sign In
-                  },
-                  icon: const Icon(Icons.g_mobiledata),
-                  label: const Text('Continuar con Google'),
-                ),
-                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '¿No tienes una cuenta?',
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    const Text('¿No tienes una cuenta?'),
                     TextButton(
                       onPressed: () {
-                        context.replace('/register');
+                        context.push('/register');
                       },
                       child: const Text('Regístrate'),
                     ),
