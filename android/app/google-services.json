@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "961436030319",
+    "project_id": "spendora-88663",
+    "storage_bucket": "spendora-88663.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:961436030319:android:6e602997588c170671849a",
+        "android_client_info": {
+          "package_name": "com.example.spendora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2C41bh-Ityus1MY94UZs5S6YFZ8oTr8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
