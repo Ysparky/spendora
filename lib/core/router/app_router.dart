@@ -8,6 +8,7 @@ import 'package:spendora/features/auth/presentation/screens/auth_screen.dart';
 import 'package:spendora/features/auth/presentation/screens/login_screen.dart';
 import 'package:spendora/features/auth/presentation/screens/register_screen.dart';
 import 'package:spendora/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:spendora/features/profile/presentation/screens/profile_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -52,6 +53,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

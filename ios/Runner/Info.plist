@@ -45,6 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Permissions for image_picker -->
+	<key>NSCameraUsageDescription</key>
+	<string>Necesitamos acceso a la cámara para tomar tu foto de perfil</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Necesitamos acceso a tu galería para seleccionar tu foto de perfil</string>
 	<!-- Google Sign-in Section -->
 	<key>CFBundleURLTypes</key>
 	<array>

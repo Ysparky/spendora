@@ -12,6 +12,10 @@ abstract class UserModel with _$UserModel {
     required String email,
     required DateTime createdAt,
     String? name,
+    String? photoUrl,
+    String? currency,
+    bool? darkMode,
+    bool? notificationsEnabled,
   }) = _UserModel;
 
   const UserModel._();
@@ -23,6 +27,10 @@ abstract class UserModel with _$UserModel {
         id: user.uid,
         email: user.email!,
         name: user.displayName,
+        photoUrl: user.photoURL,
+        currency: 'USD', // Default
+        darkMode: false, // Default
+        notificationsEnabled: true, // Default
         createdAt: DateTime.now(),
       );
 

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:spendora/features/auth/presentation/controllers/auth_controller.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -15,7 +16,15 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('Dashboard'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.person),
+            tooltip: 'Perfil',
+            onPressed: () {
+              context.go('/profile');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
             onPressed: () {
               ref.read(authControllerProvider.notifier).signOut();
             },
