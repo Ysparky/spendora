@@ -55,16 +55,21 @@ class AuthController extends _$AuthController {
                 password,
               );
 
-      // 2. Update the user's display name
-      await credential.user?.updateDisplayName(name);
-
-      // 3. Save user data in Firestore
+      // 2. Update the user's display name and wait for it to complete
       if (credential.user != null) {
-        final userModel = UserModel.fromFirebaseUser(credential.user!);
+        await credential.user!.updateDisplayName(name);
+
+        // 3. Reload the user to make sure the display name is updated in the
+        // current user object
+        await credential.user!.reload();
+
+        // 4. Save user data in Firestore
+        final userModel =
+            UserModel.fromFirebaseUser(FirebaseAuth.instance.currentUser!);
         await ref.read(userRepositoryProvider).createUser(userModel);
       }
 
-      state = AsyncData(credential.user);
+      state = AsyncData(FirebaseAuth.instance.currentUser);
     } on AuthValidationError catch (e) {
       state = AsyncError(e.message, StackTrace.current);
     } on FirebaseAuthException catch (e, stack) {
