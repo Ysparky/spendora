@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'app_colors.dart';
-import 'app_typography.dart';
+import 'package:flutter/material.dart';
+import 'package:spendora/core/theme/app_colors.dart';
+import 'package:spendora/core/theme/app_typography.dart';
 
 /// Main theme configuration for the Spendora app
 class AppTheme {
@@ -9,7 +9,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: ColorScheme(
+      colorScheme: const ColorScheme(
         brightness: Brightness.light,
         primary: AppColors.primary,
         onPrimary: AppColors.onPrimary,
@@ -61,7 +61,7 @@ class AppTheme {
         titleTextStyle: AppTypography.titleLarge,
       ),
 
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.onSurfaceVariant,
@@ -95,11 +95,11 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.error),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -130,34 +130,34 @@ class AppTheme {
   static ThemeData get darkTheme {
     return lightTheme.copyWith(
       brightness: Brightness.dark,
-      colorScheme: ColorScheme(
+      colorScheme: const ColorScheme(
         brightness: Brightness.dark,
-        primary: const Color(0xFFD0BCFF),
-        onPrimary: const Color(0xFF381E72),
-        primaryContainer: const Color(0xFF4F378B),
-        onPrimaryContainer: const Color(0xFFEADDFF),
-        secondary: const Color(0xFFCCC2DC),
-        onSecondary: const Color(0xFF332D41),
-        secondaryContainer: const Color(0xFF4A4458),
-        onSecondaryContainer: const Color(0xFFE8DEF8),
-        error: const Color(0xFFF2B8B5),
-        onError: const Color(0xFF601410),
-        errorContainer: const Color(0xFF8C1D18),
-        onErrorContainer: const Color(0xFFF9DEDC),
-        background: const Color(0xFF1C1B1F),
-        onBackground: const Color(0xFFE6E1E5),
-        surface: const Color(0xFF1C1B1F),
-        onSurface: const Color(0xFFE6E1E5),
-        surfaceVariant: const Color(0xFF49454F),
-        onSurfaceVariant: const Color(0xFFCAC4D0),
-        outline: const Color(0xFF938F99),
-        shadow: const Color(0xFF000000),
+        primary: Color(0xFFD0BCFF),
+        onPrimary: Color(0xFF381E72),
+        primaryContainer: Color(0xFF4F378B),
+        onPrimaryContainer: Color(0xFFEADDFF),
+        secondary: Color(0xFFCCC2DC),
+        onSecondary: Color(0xFF332D41),
+        secondaryContainer: Color(0xFF4A4458),
+        onSecondaryContainer: Color(0xFFE8DEF8),
+        error: Color(0xFFF2B8B5),
+        onError: Color(0xFF601410),
+        errorContainer: Color(0xFF8C1D18),
+        onErrorContainer: Color(0xFFF9DEDC),
+        background: Color(0xFF1C1B1F),
+        onBackground: Color(0xFFE6E1E5),
+        surface: Color(0xFF1C1B1F),
+        onSurface: Color(0xFFE6E1E5),
+        surfaceVariant: Color(0xFF49454F),
+        onSurfaceVariant: Color(0xFFCAC4D0),
+        outline: Color(0xFF938F99),
+        shadow: Color(0xFF000000),
       ),
 
       // Override specific component themes for dark mode
-      appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF1C1B1F),
-        foregroundColor: const Color(0xFFE6E1E5),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF1C1B1F),
+        foregroundColor: Color(0xFFE6E1E5),
       ),
 
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
