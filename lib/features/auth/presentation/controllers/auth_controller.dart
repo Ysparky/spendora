@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spendora/features/auth/data/repositories/auth_repository.dart';
 import 'package:spendora/features/auth/data/repositories/user_repository.dart';
 import 'package:spendora/features/auth/domain/models/user_model.dart';
+import 'package:spendora/features/auth/domain/utils/firebase_auth_error_handler.dart';
 import 'package:spendora/features/auth/domain/validators/auth_validator.dart';
 
 part 'auth_controller.g.dart';
@@ -28,7 +29,7 @@ class AuthController extends _$AuthController {
     } on AuthValidationError catch (e) {
       state = AsyncError(e.message, StackTrace.current);
     } on FirebaseAuthException catch (e, stack) {
-      state = AsyncError(e.message ?? 'Error de autenticación', stack);
+      state = AsyncError(FirebaseAuthErrorHandler.handleError(e), stack);
     } on Exception catch (e, stack) {
       state = AsyncError(e.toString(), stack);
     }
@@ -67,7 +68,7 @@ class AuthController extends _$AuthController {
     } on AuthValidationError catch (e) {
       state = AsyncError(e.message, StackTrace.current);
     } on FirebaseAuthException catch (e, stack) {
-      state = AsyncError(e.message ?? 'Error de autenticación', stack);
+      state = AsyncError(FirebaseAuthErrorHandler.handleError(e), stack);
     } on Exception catch (e, stack) {
       state = AsyncError(e.toString(), stack);
     }
@@ -88,7 +89,7 @@ class AuthController extends _$AuthController {
 
       state = AsyncData(credential.user);
     } on FirebaseAuthException catch (e, stack) {
-      state = AsyncError(e.message ?? 'Error de autenticación', stack);
+      state = AsyncError(FirebaseAuthErrorHandler.handleError(e), stack);
     } on Exception catch (e, stack) {
       state = AsyncError(e.toString(), stack);
     }
@@ -107,7 +108,7 @@ class AuthController extends _$AuthController {
     } on AuthValidationError catch (e) {
       state = AsyncError(e.message, StackTrace.current);
     } on FirebaseAuthException catch (e, stack) {
-      state = AsyncError(e.message ?? 'Error de autenticación', stack);
+      state = AsyncError(FirebaseAuthErrorHandler.handleError(e), stack);
     } on Exception catch (e, stack) {
       state = AsyncError(e.toString(), stack);
     }

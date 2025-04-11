@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendora/core/router/app_router.dart';
 import 'package:spendora/core/theme/app_theme.dart';
+import 'package:spendora/features/auth/presentation/widgets/auth_error_listener.dart';
 import 'package:spendora/firebase_options.dart';
 
 void main() async {
@@ -27,8 +28,10 @@ class SpendoraApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      // themeMode: ThemeMode.system, // We'll make this configurable later
-      // home: const AuthScreen(),
+      themeMode: ThemeMode.system, // We'll make this configurable later
+      builder: (context, child) {
+        return AuthErrorListener(child: child ?? const SizedBox());
+      },
     );
   }
 }
