@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'package:spendora/core/services/image_optimization_service.dart';
 import 'package:spendora/features/auth/data/repositories/user_repository.dart';
 import 'package:spendora/features/auth/domain/models/user_model.dart';
 
@@ -47,13 +49,21 @@ class UserProfileController extends _$UserProfileController {
     if (currentUser == null) return;
 
     try {
-      // Upload image to Firebase Storage
+      // Optimize image before uploading
+      final optimizedImageFile =
+          await ImageOptimizationService.optimizeProfileImage(imageFile);
+
+      // Get storage reference
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('profile_pictures')
           .child('${currentUser.uid}.jpg');
 
-      await storageRef.putFile(imageFile);
+      // Get optimized metadata
+      final metadata = ImageOptimizationService.getProfileImageMetadata();
+
+      // Upload optimized image with metadata
+      await storageRef.putFile(optimizedImageFile, metadata);
       final downloadUrl = await storageRef.getDownloadURL();
 
       // Update Firebase Auth profile

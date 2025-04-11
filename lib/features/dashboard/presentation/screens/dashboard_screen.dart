@@ -19,7 +19,7 @@ class DashboardScreen extends ConsumerWidget {
             icon: const Icon(Icons.person),
             tooltip: 'Perfil',
             onPressed: () {
-              context.go('/profile');
+              context.push('/profile');
             },
           ),
           IconButton(
