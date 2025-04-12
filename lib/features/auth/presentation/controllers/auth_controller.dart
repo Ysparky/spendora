@@ -97,7 +97,9 @@ class AuthController extends _$AuthController {
       state = AsyncError(FirebaseAuthErrorHandler.handleError(e), stack);
     } on Exception catch (e, stack) {
       state = AsyncError(
-          FirebaseAuthErrorHandler.handleGoogleSignInError(e), stack);
+        FirebaseAuthErrorHandler.handleGoogleSignInError(e),
+        stack,
+      );
     }
   }
 

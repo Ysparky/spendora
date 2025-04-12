@@ -102,10 +102,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   side: BorderSide(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withOpacity(0.5)),
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                  ),
                   backgroundColor: Colors.transparent,
                 ),
                 child: const Row(
