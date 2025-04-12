@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendora/core/storage/app_preferences.dart';
+import 'package:spendora/core/theme/theme_provider.dart' as app_theme;
 import 'package:spendora/features/auth/domain/models/user_model.dart';
-import 'package:spendora/features/profile/presentation/controllers/profile_state_controller.dart';
-import 'package:spendora/features/profile/presentation/controllers/user_profile_controller.dart';
 import 'package:spendora/features/profile/presentation/widgets/settings_item.dart';
 
 class ProfileSettingsSection extends ConsumerWidget {
@@ -15,10 +15,6 @@ class ProfileSettingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(profileStateProvider);
-    final isLoading = state.isLoading;
-    final loadingAction = state.action;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -34,91 +30,80 @@ class ProfileSettingsSection extends ConsumerWidget {
         SettingsItem(
           icon: Icons.attach_money,
           title: 'Moneda',
-          subtitle: user.currency ?? 'USD',
-          trailing: loadingAction == 'currency'
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : null,
-          onTap: isLoading
-              ? null
-              : () => _showCurrencyPicker(
-                    context,
-                    ref,
-                    user.currency ?? 'USD',
-                  ),
+          subtitle: ref.watch(currencyPreferenceProvider).when(
+                data: (currency) => currency,
+                loading: () => 'USD',
+                error: (_, __) => 'USD',
+              ),
+          onTap: () => _showCurrencyPicker(context, ref),
         ),
 
         // Dark Mode
         SettingsItem(
           icon: Icons.dark_mode,
           title: 'Tema Oscuro',
-          trailing: loadingAction == 'theme'
-              ? const SizedBox(
+          trailing: Consumer(
+            builder: (context, ref, child) {
+              final themePreference = ref.watch(themePreferenceProvider);
+
+              return themePreference.when(
+                data: (themeMode) {
+                  final isDarkMode = themeMode == 'dark';
+
+                  return Switch(
+                    value: isDarkMode,
+                    onChanged: (value) async {
+                      // Save to shared preferences
+                      await ref
+                          .read(themePreferenceProvider.notifier)
+                          .setThemeMode(value ? 'dark' : 'light');
+
+                      // Just invalidate the provider after setting preference
+                      ref.invalidate(app_theme.themeNotifierProvider);
+                    },
+                  );
+                },
+                loading: () => const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Switch(
-                  value: user.darkMode ?? false,
-                  onChanged: isLoading
-                      ? null
-                      : (value) async {
-                          // Set loading state
-                          ref
-                              .read(profileStateProvider.notifier)
-                              .startLoading('theme');
-
-                          try {
-                            await ref
-                                .read(userProfileControllerProvider.notifier)
-                                .toggleDarkMode(darkMode: value);
-                          } finally {
-                            // Reset loading state
-                            ref
-                                .read(profileStateProvider.notifier)
-                                .stopLoading();
-                          }
-                        },
                 ),
+                error: (_, __) => const Icon(Icons.error),
+              );
+            },
+          ),
         ),
 
         // Notifications
         SettingsItem(
           icon: Icons.notifications,
           title: 'Notificaciones',
-          trailing: loadingAction == 'notifications'
-              ? const SizedBox(
+          trailing: Consumer(
+            builder: (context, ref, child) {
+              final notificationsPreference =
+                  ref.watch(notificationsPreferenceProvider);
+
+              return notificationsPreference.when(
+                data: (enabled) {
+                  return Switch(
+                    value: enabled,
+                    onChanged: (value) async {
+                      // Save to shared preferences
+                      await ref
+                          .read(notificationsPreferenceProvider.notifier)
+                          .setNotificationsEnabled(enabled: value);
+                    },
+                  );
+                },
+                loading: () => const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Switch(
-                  value: user.notificationsEnabled ?? true,
-                  onChanged: isLoading
-                      ? null
-                      : (value) async {
-                          // Set loading state
-                          ref
-                              .read(profileStateProvider.notifier)
-                              .startLoading('notifications');
-
-                          try {
-                            await ref
-                                .read(
-                                  userProfileControllerProvider.notifier,
-                                )
-                                .toggleNotifications(enabled: value);
-                          } finally {
-                            // Reset loading state
-                            ref
-                                .read(profileStateProvider.notifier)
-                                .stopLoading();
-                          }
-                        },
                 ),
+                error: (_, __) => const Icon(Icons.error),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -128,7 +113,6 @@ class ProfileSettingsSection extends ConsumerWidget {
 void _showCurrencyPicker(
   BuildContext context,
   WidgetRef ref,
-  String currentCurrency,
 ) {
   final currencies = ['USD', 'EUR', 'GBP', 'MXN', 'COP', 'ARS', 'CLP'];
 
@@ -145,25 +129,20 @@ void _showCurrencyPicker(
             final currency = currencies[index];
             return ListTile(
               title: Text(currency),
-              trailing: currency == currentCurrency
+              trailing: currency ==
+                      ref.watch(currencyPreferenceProvider).when(
+                            data: (currency) => currency,
+                            loading: () => 'USD',
+                            error: (_, __) => 'USD',
+                          )
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () async {
                 Navigator.pop(context);
-
-                // Set loading state
-                ref
-                    .read(profileStateProvider.notifier)
-                    .startLoading('currency');
-
-                try {
-                  await ref
-                      .read(userProfileControllerProvider.notifier)
-                      .updateCurrency(currency);
-                } finally {
-                  // Reset loading state
-                  ref.read(profileStateProvider.notifier).stopLoading();
-                }
+                // Save currency to preferences
+                await ref
+                    .read(currencyPreferenceProvider.notifier)
+                    .setCurrency(currency);
               },
             );
           },

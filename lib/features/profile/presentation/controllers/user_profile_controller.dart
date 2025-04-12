@@ -91,57 +91,6 @@ class UserProfileController extends _$UserProfileController {
     }
   }
 
-  Future<void> updateCurrency(String currency) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    // Get the current user data
-    final userData =
-        await ref.read(userRepositoryProvider).getUser(currentUser.uid);
-    if (userData == null) return;
-
-    // Update Firestore with the new currency preference
-    final updatedUser = userData.copyWith(currency: currency);
-    await ref.read(userRepositoryProvider).updateUser(updatedUser);
-
-    // Refresh state
-    ref.invalidateSelf();
-  }
-
-  Future<void> toggleDarkMode({required bool darkMode}) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    // Get the current user data
-    final userData =
-        await ref.read(userRepositoryProvider).getUser(currentUser.uid);
-    if (userData == null) return;
-
-    // Update Firestore with the dark mode preference
-    final updatedUser = userData.copyWith(darkMode: darkMode);
-    await ref.read(userRepositoryProvider).updateUser(updatedUser);
-
-    // Refresh state
-    ref.invalidateSelf();
-  }
-
-  Future<void> toggleNotifications({required bool enabled}) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    // Get the current user data
-    final userData =
-        await ref.read(userRepositoryProvider).getUser(currentUser.uid);
-    if (userData == null) return;
-
-    // Update Firestore with the notifications preference
-    final updatedUser = userData.copyWith(notificationsEnabled: enabled);
-    await ref.read(userRepositoryProvider).updateUser(updatedUser);
-
-    // Refresh state
-    ref.invalidateSelf();
-  }
-
   Future<void> changePassword(
     String currentPassword,
     String newPassword,

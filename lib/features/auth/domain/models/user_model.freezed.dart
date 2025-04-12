@@ -20,9 +20,6 @@ mixin _$UserModel {
   DateTime get createdAt;
   String? get name;
   String? get photoUrl;
-  String? get currency;
-  bool? get darkMode;
-  bool? get notificationsEnabled;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -45,23 +42,17 @@ mixin _$UserModel {
                 other.createdAt == createdAt) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.photoUrl, photoUrl) ||
-                other.photoUrl == photoUrl) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.darkMode, darkMode) ||
-                other.darkMode == darkMode) &&
-            (identical(other.notificationsEnabled, notificationsEnabled) ||
-                other.notificationsEnabled == notificationsEnabled));
+                other.photoUrl == photoUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, createdAt, name,
-      photoUrl, currency, darkMode, notificationsEnabled);
+  int get hashCode =>
+      Object.hash(runtimeType, id, email, createdAt, name, photoUrl);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name, photoUrl: $photoUrl, currency: $currency, darkMode: $darkMode, notificationsEnabled: $notificationsEnabled)';
+    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name, photoUrl: $photoUrl)';
   }
 }
 
@@ -75,10 +66,7 @@ abstract mixin class $UserModelCopyWith<$Res> {
       String email,
       DateTime createdAt,
       String? name,
-      String? photoUrl,
-      String? currency,
-      bool? darkMode,
-      bool? notificationsEnabled});
+      String? photoUrl});
 }
 
 /// @nodoc
@@ -98,9 +86,6 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
     Object? createdAt = null,
     Object? name = freezed,
     Object? photoUrl = freezed,
-    Object? currency = freezed,
-    Object? darkMode = freezed,
-    Object? notificationsEnabled = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -123,18 +108,6 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
           ? _self.photoUrl
           : photoUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      currency: freezed == currency
-          ? _self.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String?,
-      darkMode: freezed == darkMode
-          ? _self.darkMode
-          : darkMode // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      notificationsEnabled: freezed == notificationsEnabled
-          ? _self.notificationsEnabled
-          : notificationsEnabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
     ));
   }
 }
@@ -147,10 +120,7 @@ class _UserModel extends UserModel {
       required this.email,
       required this.createdAt,
       this.name,
-      this.photoUrl,
-      this.currency,
-      this.darkMode,
-      this.notificationsEnabled})
+      this.photoUrl})
       : super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
@@ -165,12 +135,6 @@ class _UserModel extends UserModel {
   final String? name;
   @override
   final String? photoUrl;
-  @override
-  final String? currency;
-  @override
-  final bool? darkMode;
-  @override
-  final bool? notificationsEnabled;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -198,23 +162,17 @@ class _UserModel extends UserModel {
                 other.createdAt == createdAt) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.photoUrl, photoUrl) ||
-                other.photoUrl == photoUrl) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.darkMode, darkMode) ||
-                other.darkMode == darkMode) &&
-            (identical(other.notificationsEnabled, notificationsEnabled) ||
-                other.notificationsEnabled == notificationsEnabled));
+                other.photoUrl == photoUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, createdAt, name,
-      photoUrl, currency, darkMode, notificationsEnabled);
+  int get hashCode =>
+      Object.hash(runtimeType, id, email, createdAt, name, photoUrl);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name, photoUrl: $photoUrl, currency: $currency, darkMode: $darkMode, notificationsEnabled: $notificationsEnabled)';
+    return 'UserModel(id: $id, email: $email, createdAt: $createdAt, name: $name, photoUrl: $photoUrl)';
   }
 }
 
@@ -231,10 +189,7 @@ abstract mixin class _$UserModelCopyWith<$Res>
       String email,
       DateTime createdAt,
       String? name,
-      String? photoUrl,
-      String? currency,
-      bool? darkMode,
-      bool? notificationsEnabled});
+      String? photoUrl});
 }
 
 /// @nodoc
@@ -254,9 +209,6 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
     Object? createdAt = null,
     Object? name = freezed,
     Object? photoUrl = freezed,
-    Object? currency = freezed,
-    Object? darkMode = freezed,
-    Object? notificationsEnabled = freezed,
   }) {
     return _then(_UserModel(
       id: null == id
@@ -279,18 +231,6 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
           ? _self.photoUrl
           : photoUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      currency: freezed == currency
-          ? _self.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String?,
-      darkMode: freezed == darkMode
-          ? _self.darkMode
-          : darkMode // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      notificationsEnabled: freezed == notificationsEnabled
-          ? _self.notificationsEnabled
-          : notificationsEnabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
     ));
   }
 }

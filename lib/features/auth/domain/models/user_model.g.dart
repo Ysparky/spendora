@@ -12,9 +12,6 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
       createdAt: DateTime.parse(json['createdAt'] as String),
       name: json['name'] as String?,
       photoUrl: json['photoUrl'] as String?,
-      currency: json['currency'] as String?,
-      darkMode: json['darkMode'] as bool?,
-      notificationsEnabled: json['notificationsEnabled'] as bool?,
     );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -24,7 +21,4 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'name': instance.name,
       'photoUrl': instance.photoUrl,
-      'currency': instance.currency,
-      'darkMode': instance.darkMode,
-      'notificationsEnabled': instance.notificationsEnabled,
     };

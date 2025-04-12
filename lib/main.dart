@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendora/core/config/env_config.dart';
 import 'package:spendora/core/router/app_router.dart';
 import 'package:spendora/core/theme/app_theme.dart';
+import 'package:spendora/core/theme/theme_provider.dart' as app_theme;
 import 'package:spendora/features/auth/presentation/widgets/auth_error_listener.dart';
 
 void main() async {
@@ -29,6 +30,7 @@ class SpendoraApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themePref = ref.watch(app_theme.themeNotifierProvider);
 
     return MaterialApp.router(
       routerConfig: router,
@@ -36,7 +38,7 @@ class SpendoraApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // We'll make this configurable later
+      themeMode: themePref,
       builder: (context, child) {
         return AuthErrorListener(child: child ?? const SizedBox());
       },
