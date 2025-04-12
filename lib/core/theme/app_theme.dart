@@ -23,31 +23,47 @@ class AppTheme {
         onError: AppColors.onError,
         errorContainer: AppColors.errorContainer,
         onErrorContainer: AppColors.onErrorContainer,
+        background: AppColors.background,
+        onBackground: AppColors.onBackground,
         surface: AppColors.surface,
         onSurface: AppColors.onSurface,
-        surfaceContainerHighest: AppColors.surfaceVariant,
+        surfaceVariant: AppColors.surfaceVariant,
         onSurfaceVariant: AppColors.onSurfaceVariant,
         outline: AppColors.outline,
         shadow: AppColors.shadow,
       ),
 
-      // Typography
+      // Typography - Use default text theme colors but apply our font family
       textTheme: TextTheme(
-        displayLarge: AppTypography.displayLarge,
-        displayMedium: AppTypography.displayMedium,
-        displaySmall: AppTypography.displaySmall,
-        headlineLarge: AppTypography.headlineLarge,
-        headlineMedium: AppTypography.headlineMedium,
-        headlineSmall: AppTypography.headlineSmall,
-        titleLarge: AppTypography.titleLarge,
-        titleMedium: AppTypography.titleMedium,
-        titleSmall: AppTypography.titleSmall,
-        bodyLarge: AppTypography.bodyLarge,
-        bodyMedium: AppTypography.bodyMedium,
-        bodySmall: AppTypography.bodySmall,
-        labelLarge: AppTypography.labelLarge,
-        labelMedium: AppTypography.labelMedium,
-        labelSmall: AppTypography.labelSmall,
+        displayLarge:
+            AppTypography.displayLarge.copyWith(color: AppColors.onBackground),
+        displayMedium:
+            AppTypography.displayMedium.copyWith(color: AppColors.onBackground),
+        displaySmall:
+            AppTypography.displaySmall.copyWith(color: AppColors.onBackground),
+        headlineLarge:
+            AppTypography.headlineLarge.copyWith(color: AppColors.onBackground),
+        headlineMedium: AppTypography.headlineMedium
+            .copyWith(color: AppColors.onBackground),
+        headlineSmall:
+            AppTypography.headlineSmall.copyWith(color: AppColors.onBackground),
+        titleLarge:
+            AppTypography.titleLarge.copyWith(color: AppColors.onBackground),
+        titleMedium: AppTypography.titleMedium.copyWith(color: Colors.black),
+        titleSmall:
+            AppTypography.titleSmall.copyWith(color: AppColors.onBackground),
+        bodyLarge:
+            AppTypography.bodyLarge.copyWith(color: AppColors.onBackground),
+        bodyMedium:
+            AppTypography.bodyMedium.copyWith(color: AppColors.onBackground),
+        bodySmall:
+            AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+        labelLarge:
+            AppTypography.labelLarge.copyWith(color: AppColors.onBackground),
+        labelMedium:
+            AppTypography.labelMedium.copyWith(color: AppColors.onBackground),
+        labelSmall: AppTypography.labelSmall
+            .copyWith(color: AppColors.onSurfaceVariant),
       ),
 
       // Component themes
@@ -56,7 +72,10 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.onSurface,
         elevation: 0,
-        titleTextStyle: AppTypography.titleLarge,
+        titleTextStyle: AppTypography.titleLarge.copyWith(
+          color: AppColors.onSurface,
+          fontWeight: FontWeight.bold,
+        ),
       ),
 
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -103,6 +122,9 @@ class AppTheme {
           horizontal: 16,
           vertical: 16,
         ),
+        labelStyle: TextStyle(color: AppColors.onSurfaceVariant),
+        hintStyle:
+            TextStyle(color: AppColors.onSurfaceVariant.withOpacity(0.7)),
       ),
 
       // Button themes
@@ -113,6 +135,19 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          foregroundColor: AppColors.onPrimary,
+          backgroundColor: AppColors.primary,
+        ),
+      ),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          foregroundColor: AppColors.onPrimary,
+          backgroundColor: AppColors.primary,
         ),
       ),
 
@@ -120,17 +155,19 @@ class AppTheme {
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          foregroundColor: AppColors.primary,
         ),
       ),
     );
   }
 
   static ThemeData get darkTheme {
-    return lightTheme.copyWith(
+    return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme(
         brightness: Brightness.dark,
-        primary: Color(0xFFD0BCFF),
+        primary: Color(0xFFD0BCFF), // Lighter purple for dark mode
         onPrimary: Color(0xFF381E72),
         primaryContainer: Color(0xFF4F378B),
         onPrimaryContainer: Color(0xFFEADDFF),
@@ -142,29 +179,41 @@ class AppTheme {
         onError: Color(0xFF601410),
         errorContainer: Color(0xFF8C1D18),
         onErrorContainer: Color(0xFFF9DEDC),
-        surface: Color(0xFF1C1B1F),
-        onSurface: Color(0xFFE6E1E5),
-        surfaceContainerHighest: Color(0xFF49454F),
-        onSurfaceVariant: Color(0xFFCAC4D0),
+        background: AppColors.darkBackground,
+        onBackground: AppColors.onDarkBackground,
+        surface: AppColors.darkSurface,
+        onSurface: AppColors.onDarkSurface,
+        surfaceVariant: AppColors.darkSurfaceVariant,
+        onSurfaceVariant: AppColors.onDarkSurfaceVariant,
         outline: Color(0xFF938F99),
         shadow: Color(0xFF000000),
       ),
 
       // Override specific component themes for dark mode
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1C1B1F),
-        foregroundColor: Color(0xFFE6E1E5),
+        backgroundColor: AppColors.darkSurface,
+        foregroundColor: AppColors.onDarkSurface,
+        elevation: 0,
+        centerTitle: true,
       ),
 
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1C1B1F),
-        selectedItemColor: Color(0xFFD0BCFF),
-        unselectedItemColor: Color(0xFFCAC4D0),
+        backgroundColor: AppColors.darkSurface,
+        selectedItemColor: Color(0xFFD0BCFF), // Lighter purple
+        unselectedItemColor: AppColors.onDarkSurfaceVariant,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+
+      cardTheme: CardTheme(
+        color: AppColors.darkSurface,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF49454F),
+        fillColor: AppColors.darkSurfaceVariant,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -177,6 +226,28 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFD0BCFF), width: 2),
         ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      ),
+
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: Color(0xFFE6E1E5)),
+        displayMedium: TextStyle(color: Color(0xFFE6E1E5)),
+        displaySmall: TextStyle(color: Color(0xFFE6E1E5)),
+        headlineLarge: TextStyle(color: Color(0xFFE6E1E5)),
+        headlineMedium: TextStyle(color: Color(0xFFE6E1E5)),
+        headlineSmall: TextStyle(color: Color(0xFFE6E1E5)),
+        titleLarge: TextStyle(color: Color(0xFFE6E1E5)),
+        titleMedium: TextStyle(color: Color(0xFFE6E1E5)),
+        titleSmall: TextStyle(color: Color(0xFFE6E1E5)),
+        bodyLarge: TextStyle(color: Color(0xFFE6E1E5)),
+        bodyMedium: TextStyle(color: Color(0xFFE6E1E5)),
+        bodySmall: TextStyle(color: Color(0xFFCAC4D0)),
+        labelLarge: TextStyle(color: Color(0xFFE6E1E5)),
+        labelMedium: TextStyle(color: Color(0xFFE6E1E5)),
+        labelSmall: TextStyle(color: Color(0xFFCAC4D0)),
       ),
     );
   }

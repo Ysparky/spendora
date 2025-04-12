@@ -19,13 +19,21 @@ class AppColors {
   static const Color income = Color(0xFF386A20); // Green for income
   static const Color neutral = Color(0xFF49454F); // Neutral for balance
 
-  // Background colors
-  static const Color background = Color(0xFFFFFBFE);
-  static const Color surface = Color(0xFFFFFBFE);
+  // Background colors - Light mode
+  static const Color background = Color(0xFFF8F7FB);
+  static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFE7E0EC);
   static const Color onBackground = Color(0xFF1C1B1F);
   static const Color onSurface = Color(0xFF1C1B1F);
   static const Color onSurfaceVariant = Color(0xFF49454F);
+
+  // Background colors - Dark mode
+  static const Color darkBackground = Color(0xFF1C1B1F);
+  static const Color darkSurface = Color(0xFF2E2C34);
+  static const Color darkSurfaceVariant = Color(0xFF49454F);
+  static const Color onDarkBackground = Color(0xFFE6E1E5);
+  static const Color onDarkSurface = Color(0xFFE6E1E5);
+  static const Color onDarkSurfaceVariant = Color(0xFFCAC4D0);
 
   // Error colors
   static const Color error = Color(0xFFB3261E);
