@@ -18,20 +18,21 @@ class ProfileScreen extends ConsumerWidget {
     final isLoading = state.isLoading;
     final loadingAction = state.action;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi Perfil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: isLoading ? null : () => FirebaseAuth.instance.signOut(),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: const Text('Mi Perfil'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed:
+                    isLoading ? null : () => FirebaseAuth.instance.signOut(),
+              ),
+            ],
           ),
-        ],
-      ),
-      // Show an overlay loading indicator when any action is in progress
-      body: Stack(
-        children: [
-          userProfileAsync.when(
+          // Show content
+          body: userProfileAsync.when(
             data: (user) {
               if (user == null) {
                 return const Center(
@@ -62,12 +63,29 @@ class ProfileScreen extends ConsumerWidget {
               child: Text('Error: $error'),
             ),
           ),
-          if (isLoading && loadingAction == null)
-            const Center(
-              child: CircularProgressIndicator(),
+        ),
+
+        // Modal loading overlay with barrier (covers entire screen)
+        if (isLoading &&
+            (loadingAction == null || loadingAction == 'profileImage'))
+          Positioned.fill(
+            child: ModalBarrier(
+              dismissible: false,
+              color: Colors.black.withOpacity(0.5),
             ),
-        ],
-      ),
+          ),
+
+        // Loading indicator over the barrier
+        if (isLoading &&
+            (loadingAction == null || loadingAction == 'profileImage'))
+          const Positioned.fill(
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
