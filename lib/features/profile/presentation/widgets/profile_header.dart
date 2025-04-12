@@ -104,35 +104,46 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
+    print('Picking image');
+    // Don't proceed if already loading
     if (ref.read(profileLoadingProvider)) return;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Tomar foto'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _getImage(ImageSource.camera, context, ref);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Galería'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _getImage(ImageSource.gallery, context, ref);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    try {
+      final result = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Tomar foto'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Galería'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      // Check if context is still mounted and if user selected a source
+      if (!context.mounted || result == null) return;
+
+      // Now call _getImage with the selected source
+      await _getImage(result, context, ref);
+    } on Exception catch (e) {
+      // Handle any exceptions from the modal bottom sheet
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al abrir selector de imágenes: $e')),
+      );
+    }
   }
 
   Future<void> _getImage(
@@ -141,10 +152,6 @@ class ProfileHeader extends ConsumerWidget {
     WidgetRef ref,
   ) async {
     try {
-      // Set loading state
-      ref.read(profileLoadingProvider.notifier).state = true;
-      ref.read(loadingActionProvider.notifier).state = 'profileImage';
-
       final imagePicker = ImagePicker();
       final pickedFile = await imagePicker.pickImage(
         source: source,
@@ -155,6 +162,9 @@ class ProfileHeader extends ConsumerWidget {
 
       if (pickedFile != null) {
         try {
+          // Set loading state
+          ref.read(profileLoadingProvider.notifier).state = true;
+          ref.read(loadingActionProvider.notifier).state = 'profileImage';
           await ref
               .read(userProfileControllerProvider.notifier)
               .updateProfilePicture(File(pickedFile.path));
@@ -166,10 +176,28 @@ class ProfileHeader extends ConsumerWidget {
           );
         } on Exception catch (e) {
           if (!context.mounted) return;
+          ref.read(profileLoadingProvider.notifier).state = false;
+          ref.read(loadingActionProvider.notifier).state = null;
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error al actualizar la imagen: $e')),
           );
+        }
+      } else {
+        // No image was selected, reset state
+        print('No se seleccionó ninguna imagen');
+
+        // Check if context is still mounted before showing SnackBar
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se seleccionó ninguna imagen')),
+        );
+
+        // Reset state after checking if mounted
+        if (context.mounted) {
+          ref.read(profileLoadingProvider.notifier).state = false;
+          ref.read(loadingActionProvider.notifier).state = null;
         }
       }
     } on Exception catch (e) {

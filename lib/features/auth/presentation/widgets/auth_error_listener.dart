@@ -14,7 +14,7 @@ class AuthErrorListener extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Use select to only rebuild when the error changes
-    final errorMessage = ref.watch(authErrorProvider);
+    // final errorMessage = ref.watch(authErrorProvider);
 
     // When the error message changes and isn't null, show a Snackbar
     ref.listen<String?>(
