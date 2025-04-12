@@ -8,17 +8,17 @@ import 'package:spendora/features/profile/presentation/widgets/settings_item.dar
 class ProfileSettingsSection extends ConsumerWidget {
   const ProfileSettingsSection({
     required this.user,
-    required this.isLoading,
-    required this.loadingAction,
     super.key,
   });
 
   final UserModel user;
-  final bool isLoading;
-  final String? loadingAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(profileStateProvider);
+    final isLoading = state.isLoading;
+    final loadingAction = state.action;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,10 +67,9 @@ class ProfileSettingsSection extends ConsumerWidget {
                       ? null
                       : (value) async {
                           // Set loading state
-                          ref.read(profileLoadingProvider.notifier).state =
-                              true;
-                          ref.read(loadingActionProvider.notifier).state =
-                              'theme';
+                          ref
+                              .read(profileStateProvider.notifier)
+                              .startLoading('theme');
 
                           try {
                             await ref
@@ -78,10 +77,9 @@ class ProfileSettingsSection extends ConsumerWidget {
                                 .toggleDarkMode(darkMode: value);
                           } finally {
                             // Reset loading state
-                            ref.read(profileLoadingProvider.notifier).state =
-                                false;
-                            ref.read(loadingActionProvider.notifier).state =
-                                null;
+                            ref
+                                .read(profileStateProvider.notifier)
+                                .stopLoading();
                           }
                         },
                 ),
@@ -103,10 +101,9 @@ class ProfileSettingsSection extends ConsumerWidget {
                       ? null
                       : (value) async {
                           // Set loading state
-                          ref.read(profileLoadingProvider.notifier).state =
-                              true;
-                          ref.read(loadingActionProvider.notifier).state =
-                              'notifications';
+                          ref
+                              .read(profileStateProvider.notifier)
+                              .startLoading('notifications');
 
                           try {
                             await ref
@@ -116,10 +113,9 @@ class ProfileSettingsSection extends ConsumerWidget {
                                 .toggleNotifications(enabled: value);
                           } finally {
                             // Reset loading state
-                            ref.read(profileLoadingProvider.notifier).state =
-                                false;
-                            ref.read(loadingActionProvider.notifier).state =
-                                null;
+                            ref
+                                .read(profileStateProvider.notifier)
+                                .stopLoading();
                           }
                         },
                 ),
@@ -156,8 +152,9 @@ void _showCurrencyPicker(
                 Navigator.pop(context);
 
                 // Set loading state
-                ref.read(profileLoadingProvider.notifier).state = true;
-                ref.read(loadingActionProvider.notifier).state = 'currency';
+                ref
+                    .read(profileStateProvider.notifier)
+                    .startLoading('currency');
 
                 try {
                   await ref
@@ -165,8 +162,7 @@ void _showCurrencyPicker(
                       .updateCurrency(currency);
                 } finally {
                   // Reset loading state
-                  ref.read(profileLoadingProvider.notifier).state = false;
-                  ref.read(loadingActionProvider.notifier).state = null;
+                  ref.read(profileStateProvider.notifier).stopLoading();
                 }
               },
             );

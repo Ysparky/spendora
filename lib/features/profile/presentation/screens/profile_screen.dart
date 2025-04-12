@@ -14,25 +14,17 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userProfileAsync = ref.watch(userProfileControllerProvider);
-    final isLoading = ref.watch(profileLoadingProvider);
-    final loadingAction = ref.watch(loadingActionProvider);
+    final state = ref.watch(profileStateProvider);
+    final isLoading = state.isLoading;
+    final loadingAction = state.action;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi Perfil'),
-        // automaticallyImplyLeading: true,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back),
-        //   onPressed: () => Navigator.of(context).pop(),
-        // ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: isLoading
-                ? null
-                : () {
-                    FirebaseAuth.instance.signOut();
-                  },
+            onPressed: isLoading ? null : () => FirebaseAuth.instance.signOut(),
           ),
         ],
       ),
@@ -56,19 +48,12 @@ class ProfileScreen extends ConsumerWidget {
                   const Divider(height: 32),
 
                   // Settings section
-                  ProfileSettingsSection(
-                    user: user,
-                    isLoading: isLoading,
-                    loadingAction: loadingAction,
-                  ),
+                  ProfileSettingsSection(user: user),
 
                   const Divider(height: 32),
 
                   // Account section
-                  ProfileAccountSection(
-                    isLoading: isLoading,
-                    loadingAction: loadingAction,
-                  ),
+                  const ProfileAccountSection(),
                 ],
               );
             },

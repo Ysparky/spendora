@@ -11,7 +11,7 @@ import 'package:spendora/features/auth/domain/models/user_model.dart';
 
 part 'user_profile_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class UserProfileController extends _$UserProfileController {
   @override
   Future<UserModel?> build() async {

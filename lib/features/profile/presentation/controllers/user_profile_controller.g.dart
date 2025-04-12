@@ -7,12 +7,12 @@ part of 'user_profile_controller.dart';
 // **************************************************************************
 
 String _$userProfileControllerHash() =>
-    r'ab930c9a24b0e6950fa154533ae74484133ae875';
+    r'6c2daf1236d13d31ee264cbc57500f248f8a9d57';
 
 /// See also [UserProfileController].
 @ProviderFor(UserProfileController)
-final userProfileControllerProvider = AutoDisposeAsyncNotifierProvider<
-    UserProfileController, UserModel?>.internal(
+final userProfileControllerProvider =
+    AsyncNotifierProvider<UserProfileController, UserModel?>.internal(
   UserProfileController.new,
   name: r'userProfileControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,6 +22,6 @@ final userProfileControllerProvider = AutoDisposeAsyncNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$UserProfileController = AutoDisposeAsyncNotifier<UserModel?>;
+typedef _$UserProfileController = AsyncNotifier<UserModel?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

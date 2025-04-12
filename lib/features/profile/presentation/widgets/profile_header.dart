@@ -42,7 +42,7 @@ class ProfileHeader extends ConsumerWidget {
                         )
                       : ClipOval(
                           child: CachedNetworkImage(
-                            imageUrl: _addCacheBustingParameter(user.photoUrl!),
+                            imageUrl: user.photoUrl!,
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
@@ -97,16 +97,8 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  /// Adds a cache-busting parameter to the image URL to prevent stale caches
-  String _addCacheBustingParameter(String url) {
-    final separator = url.contains('?') ? '&' : '?';
-    return '$url${separator}v=${DateTime.now().millisecondsSinceEpoch}';
-  }
-
   Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
-    print('Picking image');
-    // Don't proceed if already loading
-    if (ref.read(profileLoadingProvider)) return;
+    if (ref.read(profileStateProvider).isLoading) return;
 
     try {
       final result = await showModalBottomSheet<ImageSource>(
@@ -163,21 +155,25 @@ class ProfileHeader extends ConsumerWidget {
       if (pickedFile != null) {
         try {
           // Set loading state
-          ref.read(profileLoadingProvider.notifier).state = true;
-          ref.read(loadingActionProvider.notifier).state = 'profileImage';
+          ref.read(profileStateProvider.notifier).startLoading('profileImage');
+
           await ref
               .read(userProfileControllerProvider.notifier)
               .updateProfilePicture(File(pickedFile.path));
 
           if (!context.mounted) return;
 
+          // Reset loading state
+          ref.read(profileStateProvider.notifier).stopLoading();
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Imagen de perfil actualizada')),
           );
         } on Exception catch (e) {
           if (!context.mounted) return;
-          ref.read(profileLoadingProvider.notifier).state = false;
-          ref.read(loadingActionProvider.notifier).state = null;
+
+          // Reset loading state
+          ref.read(profileStateProvider.notifier).stopLoading();
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error al actualizar la imagen: $e')),
@@ -193,25 +189,16 @@ class ProfileHeader extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No se seleccionó ninguna imagen')),
         );
-
-        // Reset state after checking if mounted
-        if (context.mounted) {
-          ref.read(profileLoadingProvider.notifier).state = false;
-          ref.read(loadingActionProvider.notifier).state = null;
-        }
       }
     } on Exception catch (e) {
       if (!context.mounted) return;
 
+      // Reset loading state
+      ref.read(profileStateProvider.notifier).stopLoading();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al seleccionar la imagen: $e')),
       );
-    } finally {
-      // Reset loading state if still mounted
-      if (context.mounted) {
-        ref.read(profileLoadingProvider.notifier).state = false;
-        ref.read(loadingActionProvider.notifier).state = null;
-      }
     }
   }
 
@@ -241,8 +228,8 @@ class ProfileHeader extends ConsumerWidget {
           ),
           Consumer(
             builder: (context, ref, _) {
-              final isLoading = ref.watch(profileLoadingProvider);
-              final loadingAction = ref.watch(loadingActionProvider);
+              final isLoading = ref.watch(profileStateProvider).isLoading;
+              final loadingAction = ref.watch(profileStateProvider).action;
               final isNameLoading = isLoading && loadingAction == 'name';
 
               return FilledButton(
@@ -251,10 +238,9 @@ class ProfileHeader extends ConsumerWidget {
                     : () async {
                         if (nameController.text.isNotEmpty) {
                           // Set loading state
-                          ref.read(profileLoadingProvider.notifier).state =
-                              true;
-                          ref.read(loadingActionProvider.notifier).state =
-                              'name';
+                          ref
+                              .read(profileStateProvider.notifier)
+                              .startLoading('name');
 
                           try {
                             await ref
@@ -266,10 +252,9 @@ class ProfileHeader extends ConsumerWidget {
                           } finally {
                             // Reset loading state
                             if (context.mounted) {
-                              ref.read(profileLoadingProvider.notifier).state =
-                                  false;
-                              ref.read(loadingActionProvider.notifier).state =
-                                  null;
+                              ref
+                                  .read(profileStateProvider.notifier)
+                                  .stopLoading();
                             }
                           }
                         }

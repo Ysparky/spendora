@@ -8,16 +8,15 @@ import 'package:spendora/features/profile/presentation/widgets/settings_item.dar
 
 class ProfileAccountSection extends ConsumerWidget {
   const ProfileAccountSection({
-    required this.isLoading,
-    required this.loadingAction,
     super.key,
   });
 
-  final bool isLoading;
-  final String? loadingAction;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(profileStateProvider);
+    final isLoading = state.isLoading;
+    final loadingAction = state.action;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,8 +155,9 @@ class ProfileAccountSection extends ConsumerWidget {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final isLoading = ref.watch(profileLoadingProvider);
-                final loadingAction = ref.watch(loadingActionProvider);
+                final state = ref.watch(profileStateProvider);
+                final isLoading = state.isLoading;
+                final loadingAction = state.action;
                 final isPasswordLoading =
                     isLoading && loadingAction == 'password';
 
@@ -188,10 +188,9 @@ class ProfileAccountSection extends ConsumerWidget {
                           }
 
                           // Set loading state
-                          ref.read(profileLoadingProvider.notifier).state =
-                              true;
-                          ref.read(loadingActionProvider.notifier).state =
-                              'password';
+                          ref
+                              .read(profileStateProvider.notifier)
+                              .startLoading('password');
 
                           try {
                             await ref
@@ -225,10 +224,9 @@ class ProfileAccountSection extends ConsumerWidget {
                           } finally {
                             // Reset loading state if still mounted
                             if (context.mounted) {
-                              ref.read(profileLoadingProvider.notifier).state =
-                                  false;
-                              ref.read(loadingActionProvider.notifier).state =
-                                  null;
+                              ref
+                                  .read(profileStateProvider.notifier)
+                                  .stopLoading();
                             }
                           }
                         },
@@ -267,8 +265,9 @@ class ProfileAccountSection extends ConsumerWidget {
           ),
           Consumer(
             builder: (context, ref, _) {
-              final isLoading = ref.watch(profileLoadingProvider);
-              final loadingAction = ref.watch(loadingActionProvider);
+              final state = ref.watch(profileStateProvider);
+              final isLoading = state.isLoading;
+              final loadingAction = state.action;
               final isDeleteLoading =
                   isLoading && loadingAction == 'deleteAccount';
 
@@ -279,9 +278,9 @@ class ProfileAccountSection extends ConsumerWidget {
                         Navigator.pop(context);
 
                         // Set loading state
-                        ref.read(profileLoadingProvider.notifier).state = true;
-                        ref.read(loadingActionProvider.notifier).state =
-                            'deleteAccount';
+                        ref
+                            .read(profileStateProvider.notifier)
+                            .startLoading('deleteAccount');
 
                         try {
                           await ref
@@ -307,10 +306,9 @@ class ProfileAccountSection extends ConsumerWidget {
                         } finally {
                           // Reset loading state if still mounted
                           if (context.mounted) {
-                            ref.read(profileLoadingProvider.notifier).state =
-                                false;
-                            ref.read(loadingActionProvider.notifier).state =
-                                null;
+                            ref
+                                .read(profileStateProvider.notifier)
+                                .stopLoading();
                           }
                         }
                       },
