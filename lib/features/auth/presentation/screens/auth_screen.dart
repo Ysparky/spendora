@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_int_literals
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,7 +64,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               const SizedBox(height: 48),
               if (showGoogleSignInError)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Text(
                     ref
                         .read(googleSignInControllerProvider.notifier)
