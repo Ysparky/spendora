@@ -11,18 +11,18 @@ class TransactionItem extends StatelessWidget {
     super.key,
   });
 
-  final Map<String, dynamic> transaction;
+  final TransactionModel transaction;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(symbol: r'$');
-    final isExpense = transaction['type'] == TransactionType.expense;
-    final category = transaction['category'] as String;
+    final isExpense = transaction.type == TransactionType.expense;
+    final category = transaction.category;
 
     // Get icon for the category
     IconData categoryIcon;
-    switch (category) {
+    switch (category.toLowerCase()) {
       case 'food':
         categoryIcon = Icons.restaurant;
       case 'transport':
@@ -39,7 +39,7 @@ class TransactionItem extends StatelessWidget {
         categoryIcon = Icons.category;
     }
 
-    final color = AppColors.categoryColors[category] ??
+    final color = AppColors.categoryColors[category.toLowerCase()] ??
         AppColors.categoryColors['other']!;
 
     return Card(
@@ -57,19 +57,19 @@ class TransactionItem extends StatelessWidget {
           ),
         ),
         title: Text(
-          transaction['title'] as String,
+          transaction.title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
         ),
         subtitle: Text(
-          _formatDate(transaction['date'] as DateTime),
+          _formatDate(transaction.date),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Text(
           isExpense
-              ? '- ${currencyFormat.format(transaction['amount'])}'
-              : '+ ${currencyFormat.format(transaction['amount'])}',
+              ? '- ${currencyFormat.format(transaction.amount)}'
+              : '+ ${currencyFormat.format(transaction.amount)}',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isExpense ? AppColors.expense : AppColors.income,

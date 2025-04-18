@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendora/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:spendora/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:spendora/features/dashboard/presentation/widgets/index.dart';
 import 'package:spendora/features/transactions/domain/models/transaction_model.dart';
 
@@ -16,79 +17,56 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedPeriodIndex = 1; // Default to "This Month"
   final List<String> _periods = ['This Week', 'This Month', 'This Year'];
+  final ScrollController _scrollController = ScrollController();
+  bool _isScrolled = false;
 
-  // Mock total amounts
-  final Map<String, Map<String, double>> _mockTotals = {
-    'This Week': {
-      'income': 340.00,
-      'expense': 220.50,
-    },
-    'This Month': {
-      'income': 1450.00,
-      'expense': 980.75,
-    },
-    'This Year': {
-      'income': 12450.00,
-      'expense': 9876.50,
-    },
-  };
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
-  // Mock recent transactions
-  final List<Map<String, dynamic>> _mockRecentTransactions = [
-    {
-      'id': 'tx1',
-      'title': 'Grocery Shopping',
-      'amount': 65.43,
-      'date': DateTime.now().subtract(const Duration(hours: 5)),
-      'category': 'food',
-      'type': TransactionType.expense,
-    },
-    {
-      'id': 'tx2',
-      'title': 'Salary Deposit',
-      'amount': 1200.00,
-      'date': DateTime.now().subtract(const Duration(days: 2)),
-      'category': 'other',
-      'type': TransactionType.income,
-    },
-    {
-      'id': 'tx3',
-      'title': 'Netflix Subscription',
-      'amount': 15.99,
-      'date': DateTime.now().subtract(const Duration(days: 3)),
-      'category': 'entertainment',
-      'type': TransactionType.expense,
-    },
-    {
-      'id': 'tx4',
-      'title': 'Uber Ride',
-      'amount': 22.50,
-      'date': DateTime.now().subtract(const Duration(days: 4)),
-      'category': 'transport',
-      'type': TransactionType.expense,
-    },
-  ];
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
 
-  // Mock spending distribution
-  final Map<String, double> _mockCategorySpending = {
-    'food': 350.25,
-    'transport': 125.50,
-    'shopping': 204.75,
-    'bills': 185.00,
-    'entertainment': 96.25,
-    'health': 19.00,
-  };
+  void _onScroll() {
+    if (_scrollController.offset > 0 && !_isScrolled) {
+      setState(() {
+        _isScrolled = true;
+      });
+    } else if (_scrollController.offset <= 0 && _isScrolled) {
+      setState(() {
+        _isScrolled = false;
+      });
+    }
+  }
+
+  // Get the appropriate transaction stream based on selected period
+  Stream<List<TransactionModel>> _getTransactionsForPeriod(int periodIndex) {
+    final controller = ref.read(dashboardControllerProvider.notifier);
+
+    switch (periodIndex) {
+      case 0: // This Week
+        return controller.getWeekTransactions();
+      case 1: // This Month
+        return controller.getMonthTransactions();
+      case 2: // This Year
+        return controller.getYearTransactions();
+      default:
+        return controller.getMonthTransactions();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     // final currencyFormat = NumberFormat.currency(symbol: r'$');
     final selectedPeriod = _periods[_selectedPeriodIndex];
-
-    // Calculate balance for selected period
-    final income = _mockTotals[selectedPeriod]!['income'] ?? 0.0;
-    final expense = _mockTotals[selectedPeriod]!['expense'] ?? 0.0;
-    final balance = income - expense;
 
     // Get user display name for greeting
     final userName = user?.displayName?.split(' ').first ??
@@ -97,6 +75,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return Scaffold(
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           // App Bar
           SliverAppBar(
@@ -170,12 +149,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Balance card
-                  BalanceCard(
-                    period: selectedPeriod,
-                    balance: balance,
-                    income: income,
-                    expense: expense,
+                  // Balance card with real data
+                  StreamBuilder<List<TransactionModel>>(
+                    stream: _getTransactionsForPeriod(_selectedPeriodIndex),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting &&
+                          !snapshot.hasData) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      final transactions = snapshot.data ?? [];
+                      final summary = ref
+                          .read(dashboardControllerProvider.notifier)
+                          .calculateFinancialSummary(transactions);
+
+                      return BalanceCard(
+                        period: selectedPeriod,
+                        balance: summary['balance'] ?? 0,
+                        income: summary['income'] ?? 0,
+                        expense: summary['expense'] ?? 0,
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -190,10 +186,38 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                   const SizedBox(height: 16),
 
+                  // Category spending list with real data
                   SizedBox(
                     height: 180,
-                    child: CategorySpendingList(
-                      categorySpending: _mockCategorySpending,
+                    child: StreamBuilder<List<TransactionModel>>(
+                      stream: _getTransactionsForPeriod(_selectedPeriodIndex),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                                ConnectionState.waiting &&
+                            !snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        final transactions = snapshot.data ?? [];
+                        final categorySpending = ref
+                            .read(dashboardControllerProvider.notifier)
+                            .calculateCategorySpending(transactions);
+
+                        if (categorySpending.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'No spending data for this period',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          );
+                        }
+
+                        return CategorySpendingList(
+                          categorySpending: categorySpending,
+                        );
+                      },
                     ),
                   ),
 
@@ -221,25 +245,57 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                   const SizedBox(height: 8),
 
-                  ...(_mockRecentTransactions.isEmpty
-                      ? [const EmptyTransactionMessage()]
-                      : _mockRecentTransactions
-                          .map(
-                            (transaction) => TransactionItem(
-                              transaction: transaction,
-                              onTap: () => context.push('/transactions'),
-                            ),
-                          )
-                          .toList()),
+                  // Recent transactions list with real data
+                  StreamBuilder<List<TransactionModel>>(
+                    stream: ref
+                        .read(dashboardControllerProvider.notifier)
+                        .getRecentTransactions(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting &&
+                          !snapshot.hasData) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+
+                      final transactions = snapshot.data ?? [];
+
+                      if (transactions.isEmpty) {
+                        return const EmptyTransactionMessage();
+                      }
+
+                      return Column(
+                        children: transactions
+                            .map(
+                              (transaction) => TransactionItem(
+                                transaction: transaction,
+                                onTap: () => context
+                                    .push('/transactions/${transaction.id}'),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
+                  ),
+
+                  // Add bottom padding to ensure the last transaction item is visible
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/transactions/add'),
-        child: const Icon(Icons.add),
+      floatingActionButton: AnimatedOpacity(
+        opacity: _isScrolled ? 0.6 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: FloatingActionButton(
+          onPressed: () => context.push('/transactions/add'),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

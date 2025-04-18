@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// Widget displayed when there are no transactions to show
 class EmptyTransactionMessage extends StatelessWidget {
@@ -34,7 +35,7 @@ class EmptyTransactionMessage extends StatelessWidget {
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () {
-              // Navigation will be implemented in dashboard_screen.dart
+              context.push('/transactions/add');
             },
             icon: const Icon(Icons.add),
             label: const Text('Add Transaction'),
