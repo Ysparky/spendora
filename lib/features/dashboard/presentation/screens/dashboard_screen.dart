@@ -55,6 +55,75 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+              // Actions section
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      context,
+                      'View Transactions',
+                      Icons.receipt_long,
+                      Colors.purple.shade100,
+                      () => context.push('/transactions'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildActionCard(
+                      context,
+                      'Add Transaction',
+                      Icons.add_circle_outline,
+                      Colors.green.shade100,
+                      () => context.push('/transactions/add'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color backgroundColor,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: backgroundColor.withOpacity(0.3),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ],
           ),
         ),
