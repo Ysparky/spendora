@@ -29,6 +29,7 @@ class TransactionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(symbol: r'$');
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Determine colors based on transaction type
     final amountColor = transaction.type == TransactionType.expense
@@ -64,62 +65,99 @@ class TransactionListItem extends StatelessWidget {
         AppColors.categoryColors[transaction.category.toLowerCase()] ??
             AppColors.categoryColors['other']!;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            // Category icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+    return Dismissible(
+      key: ValueKey(transaction.id),
+      background: Container(
+        color: colorScheme.primary,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: Icon(
+          Icons.edit,
+          color: colorScheme.onPrimary,
+        ),
+      ),
+      secondaryBackground: Container(
+        color: colorScheme.error,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Icon(
+          Icons.delete,
+          color: colorScheme.onError,
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          // Delete action
+          if (onDelete != null) {
+            onDelete?.call();
+            return false; // Don't dismiss automatically, let the parent handle it
+          }
+        } else if (direction == DismissDirection.startToEnd) {
+          // Edit action
+          if (onEdit != null) {
+            onEdit?.call();
+          }
+          return false; // Don't actually dismiss the item
+        }
+        return false;
+      },
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              // Category icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: categoryColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  categoryIcon,
+                  color: categoryColor,
+                ),
               ),
-              child: Icon(
-                categoryIcon,
-                color: categoryColor,
+              const SizedBox(width: 16),
+              // Transaction details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      transaction.description ?? transaction.category,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withOpacity(0.7),
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            // Transaction details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    transaction.description ?? transaction.category,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              // Amount
+              Text(
+                formattedAmount,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: amountColor,
+                    ),
               ),
-            ),
-            // Amount
-            Text(
-              formattedAmount,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: amountColor,
-                  ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

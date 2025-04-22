@@ -273,7 +273,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               (transaction) => TransactionItem(
                                 transaction: transaction,
                                 onTap: () => context.push(
-                                    '/transactions/details/${transaction.id}'),
+                                  '/transactions/details/${transaction.id}',
+                                ),
                               ),
                             )
                             .toList(),

@@ -89,7 +89,7 @@ class _TransactionDetailScreenState
               orElse: () => throw Exception('Transaction not found'),
             ),
           );
-    } catch (e) {
+    } on Exception catch (e) {
       // Handle error in the StreamBuilder
       debugPrint(e.toString());
     } finally {
@@ -303,7 +303,6 @@ class _TransactionDetailScreenState
 
   Widget _buildEditForm(BuildContext context, TransactionModel transaction) {
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -343,7 +342,7 @@ class _TransactionDetailScreenState
               decoration: const InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                prefixText: '\$ ',
+                prefixText: r'$ ',
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
@@ -355,7 +354,7 @@ class _TransactionDetailScreenState
                   if (amount <= 0) {
                     return 'Amount must be greater than zero';
                   }
-                } catch (e) {
+                } on Exception catch (_) {
                   return 'Please enter a valid number';
                 }
                 return null;
@@ -583,7 +582,9 @@ class _TransactionDetailScreenState
   }
 
   Widget _buildTransactionDetails(
-      BuildContext context, TransactionModel transaction) {
+    BuildContext context,
+    TransactionModel transaction,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final dateFormat = DateFormat.yMMMd();

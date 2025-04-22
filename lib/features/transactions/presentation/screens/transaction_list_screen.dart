@@ -87,59 +87,54 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen>
   Stream<List<TransactionModel>> _getFilteredTransactions() {
     final controller = ref.read(transactionControllerProvider.notifier);
 
-    // Apply filters based on selected criteria
-    if (_selectedCategory != null) {
+    // Always fetch all transactions once and apply filters in memory
+    return controller.getTransactions().map((allTransactions) {
+      // Apply filters to the transactions
+      var filteredTransactions = allTransactions;
+
+      // Filter by transaction type if needed
       if (_selectedFilterType == FilterType.income) {
-        // Filter by category AND income type
-        return controller.getTransactionsByCategory(_selectedCategory!).map(
-              (transactions) => transactions
-                  .where((tx) => tx.type == TransactionType.income)
-                  .toList(),
-            );
+        filteredTransactions = filteredTransactions
+            .where((tx) => tx.type == TransactionType.income)
+            .toList();
       } else if (_selectedFilterType == FilterType.expense) {
-        // Filter by category AND expense type
-        return controller.getTransactionsByCategory(_selectedCategory!).map(
-              (transactions) => transactions
-                  .where((tx) => tx.type == TransactionType.expense)
-                  .toList(),
-            );
-      } else {
-        // Filter just by category (both income and expense)
-        return controller.getTransactionsByCategory(_selectedCategory!);
+        filteredTransactions = filteredTransactions
+            .where((tx) => tx.type == TransactionType.expense)
+            .toList();
       }
-    } else if (_startDate != null && _endDate != null) {
-      if (_selectedFilterType == FilterType.income) {
-        // Filter by date range AND income type
-        return controller
-            .getTransactionsByDateRange(_startDate!, _endDate!)
-            .map(
-              (transactions) => transactions
-                  .where((tx) => tx.type == TransactionType.income)
-                  .toList(),
-            );
-      } else if (_selectedFilterType == FilterType.expense) {
-        // Filter by date range AND expense type
-        return controller
-            .getTransactionsByDateRange(_startDate!, _endDate!)
-            .map(
-              (transactions) => transactions
-                  .where((tx) => tx.type == TransactionType.expense)
-                  .toList(),
-            );
-      } else {
-        // Filter just by date range (both income and expense)
-        return controller.getTransactionsByDateRange(_startDate!, _endDate!);
+
+      // Apply category filter if selected
+      if (_selectedCategory != null) {
+        filteredTransactions = filteredTransactions
+            .where((tx) => tx.category == _selectedCategory)
+            .toList();
       }
-    } else if (_selectedFilterType == FilterType.income) {
-      // Filter just by income type
-      return controller.getTransactionsByType(TransactionType.income);
-    } else if (_selectedFilterType == FilterType.expense) {
-      // Filter just by expense type
-      return controller.getTransactionsByType(TransactionType.expense);
-    } else {
-      // Return all transactions (both income and expense)
-      return controller.getTransactions();
-    }
+
+      // Apply date range filter if selected
+      if (_startDate != null && _endDate != null) {
+        // Add one day to end date to include the full day
+        final endDateWithTime = DateTime(
+          _endDate!.year,
+          _endDate!.month,
+          _endDate!.day,
+          23,
+          59,
+          59,
+        );
+
+        filteredTransactions = filteredTransactions
+            .where(
+              (tx) =>
+                  tx.date.isAfter(_startDate!) &&
+                  tx.date.isBefore(
+                    endDateWithTime.add(const Duration(seconds: 1)),
+                  ),
+            )
+            .toList();
+      }
+
+      return filteredTransactions;
+    });
   }
 
   void _clearFilters() {
@@ -566,84 +561,52 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen>
                                 ),
                                 const Divider(height: 1),
                                 ...transactions.map(
-                                  (transaction) => Dismissible(
-                                    key: ValueKey(transaction.id),
-                                    background: Container(
-                                      color: colorScheme.primary,
-                                      alignment: Alignment.centerLeft,
-                                      padding: const EdgeInsets.only(left: 20),
-                                      child: Icon(
-                                        Icons.edit,
-                                        color: colorScheme.onPrimary,
-                                      ),
-                                    ),
-                                    secondaryBackground: Container(
-                                      color: colorScheme.error,
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.only(right: 20),
-                                      child: Icon(
-                                        Icons.delete,
-                                        color: colorScheme.onError,
-                                      ),
-                                    ),
-                                    confirmDismiss: (direction) async {
-                                      if (direction ==
-                                          DismissDirection.endToStart) {
-                                        // Delete action
-                                        final result = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: const Text(
-                                              'Delete Transaction',
-                                            ),
-                                            content: Text(
-                                              'Are you sure you want to delete "${transaction.title}"?',
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(false),
-                                                child: const Text('Cancel'),
-                                              ),
-                                              FilledButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(true),
-                                                style: FilledButton.styleFrom(
-                                                  backgroundColor:
-                                                      Theme.of(context)
-                                                          .colorScheme
-                                                          .error,
-                                                ),
-                                                child: const Text('Delete'),
-                                              ),
-                                            ],
+                                  (transaction) => TransactionListItem(
+                                    transaction: transaction,
+                                    onTap: () {
+                                      context.push(
+                                        '/transactions/details/${transaction.id}',
+                                      );
+                                    },
+                                    onEdit: () => _editTransaction(transaction),
+                                    onDelete: () async {
+                                      final result = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text(
+                                            'Delete Transaction',
                                           ),
+                                          content: Text(
+                                            'Are you sure you want to delete "${transaction.title}"?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            FilledButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                              style: FilledButton.styleFrom(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .error,
+                                              ),
+                                              child: const Text('Delete'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (result != null && result == true) {
+                                        await _deleteTransaction(
+                                          transaction.id,
                                         );
-                                        return result ?? false;
-                                      } else if (direction ==
-                                          DismissDirection.startToEnd) {
-                                        // Edit action
-                                        _editTransaction(transaction);
-                                        return false; // Don't actually dismiss the item
-                                      }
-                                      return false;
-                                    },
-                                    onDismissed: (direction) {
-                                      if (direction ==
-                                          DismissDirection.endToStart) {
-                                        _deleteTransaction(transaction.id);
                                       }
                                     },
-                                    child: TransactionListItem(
-                                      transaction: transaction,
-                                      onTap: () {
-                                        context.push(
-                                          '/transactions/details/${transaction.id}',
-                                        );
-                                      },
-                                    ),
                                   ),
                                 ),
                                 if (index < transactionsByDate.keys.length - 1)
