@@ -13,6 +13,7 @@ import 'package:spendora/features/statistics/presentation/screens/statistics_scr
 import 'package:spendora/features/transactions/presentation/screens/add_transaction_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/transaction_detail_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/transaction_list_screen.dart';
+import 'package:spendora/features/budget/presentation/screens/budget_list_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -85,6 +86,15 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/statistics',
         builder: (context, state) => const StatisticsScreen(),
+      ),
+      GoRoute(
+        path: '/budgets',
+        builder: (context, state) => const BudgetListScreen(),
+      ),
+      GoRoute(
+        path: '/budgets/add',
+        builder: (context, state) =>
+            const BudgetListScreen(showAddBudgetForm: true),
       ),
     ],
   );

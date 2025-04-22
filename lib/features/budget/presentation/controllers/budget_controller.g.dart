@@ -1,30 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'statistics_controller.dart';
+part of 'budget_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$statisticsControllerHash() =>
-    r'93ca01caae809e1cbd29592bb79771c3052b9396';
+String _$budgetControllerHash() => r'3a490a73a4a33c4a5fb10387d4c703c50db4a29f';
 
-/// Controller for statistics feature
+/// Controller for budget operations
 ///
-/// Copied from [StatisticsController].
-@ProviderFor(StatisticsController)
-final statisticsControllerProvider = AutoDisposeNotifierProvider<
-    StatisticsController, AsyncValue<StatisticsModel?>>.internal(
-  StatisticsController.new,
-  name: r'statisticsControllerProvider',
+/// Copied from [BudgetController].
+@ProviderFor(BudgetController)
+final budgetControllerProvider =
+    AutoDisposeNotifierProvider<BudgetController, AsyncValue<void>>.internal(
+  BudgetController.new,
+  name: r'budgetControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$statisticsControllerHash,
+      : _$budgetControllerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$StatisticsController
-    = AutoDisposeNotifier<AsyncValue<StatisticsModel?>>;
+typedef _$BudgetController = AutoDisposeNotifier<AsyncValue<void>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

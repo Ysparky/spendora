@@ -99,6 +99,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.account_balance_wallet),
+                tooltip: 'Budgets',
+                onPressed: () {
+                  context.push('/budgets');
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.query_stats),
                 tooltip: 'Statistics',
                 onPressed: () {
@@ -300,11 +307,46 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       floatingActionButton: AnimatedOpacity(
         opacity: _isScrolled ? 0.6 : 1.0,
         duration: const Duration(milliseconds: 200),
-        child: FloatingActionButton(
-          onPressed: () => context.push('/transactions/add'),
-          child: const Icon(Icons.add),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            _showActionOptions(context);
+          },
+          label: const Text('Add'),
+          icon: const Icon(Icons.add),
         ),
       ),
+    );
+  }
+
+  void _showActionOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.monetization_on,
+                    color: Theme.of(context).colorScheme.primary),
+                title: const Text('Add Transaction'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/transactions/add');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.account_balance_wallet,
+                    color: Theme.of(context).colorScheme.secondary),
+                title: const Text('Add Budget'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/budgets/add');
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
