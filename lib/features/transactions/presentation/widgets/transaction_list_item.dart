@@ -9,6 +9,8 @@ class TransactionListItem extends StatelessWidget {
   const TransactionListItem({
     required this.transaction,
     required this.onTap,
+    this.onEdit,
+    this.onDelete,
     super.key,
   });
 
@@ -17,6 +19,12 @@ class TransactionListItem extends StatelessWidget {
 
   /// Callback when the item is tapped
   final VoidCallback onTap;
+
+  /// Callback when edit action is triggered
+  final VoidCallback? onEdit;
+
+  /// Callback when delete action is triggered
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {

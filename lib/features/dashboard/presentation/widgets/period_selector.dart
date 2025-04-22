@@ -11,7 +11,7 @@ class PeriodSelector extends StatelessWidget {
 
   final List<String> periods;
   final int selectedIndex;
-  final Function(int) onPeriodChanged;
+  final void Function(int) onPeriodChanged;
 
   @override
   Widget build(BuildContext context) {

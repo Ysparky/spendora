@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:spendora/core/theme/app_colors.dart';
 import 'package:spendora/features/transactions/domain/models/transaction_model.dart';
 
+/// Enum for internal special type handling
+enum _FilterBarType {
+  expense,
+  income,
+  all,
+}
+
 /// Widget for filtering transactions
 class TransactionFilterBar extends StatelessWidget {
   /// Constructor
@@ -18,110 +25,123 @@ class TransactionFilterBar extends StatelessWidget {
   final TransactionType selectedType;
 
   /// Callback when transaction type changes
-  final Function(TransactionType) onTypeChanged;
+  final void Function(TransactionType) onTypeChanged;
 
   /// Callback when a category is selected
-  final Function(String) onCategorySelected;
+  final void Function(String) onCategorySelected;
 
   /// Callback when a date range is selected
-  final Function(DateTimeRange) onDateRangeSelected;
+  final void Function(DateTimeRange) onDateRangeSelected;
 
   /// Callback to clear all filters
   final VoidCallback onClearFilters;
 
+  /// Map TransactionType to internal enum
+  _FilterBarType _mapToFilterBarType(TransactionType type) {
+    switch (type) {
+      case TransactionType.expense:
+        return _FilterBarType.expense;
+      case TransactionType.income:
+        return _FilterBarType.income;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Check if "All" is selected (special internal handling)
+    final currentType = _mapToFilterBarType(selectedType);
+    final isExpenseSelected = currentType == _FilterBarType.expense;
+    final isIncomeSelected = currentType == _FilterBarType.income;
+    final isAllSelected = !isExpenseSelected && !isIncomeSelected;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+        border: Border(
+          bottom: BorderSide(
+            color:
+                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 3,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Type filter
-          Row(
-            children: [
-              _buildTypeFilterChip(
-                context,
-                TransactionType.expense,
-                'Expenses',
-                Icons.arrow_downward,
-                AppColors.expense,
-              ),
-              const SizedBox(width: 8),
-              _buildTypeFilterChip(
-                context,
-                TransactionType.income,
-                'Income',
-                Icons.arrow_upward,
-                AppColors.income,
-              ),
-              const SizedBox(width: 8),
-              _buildTypeFilterChip(
-                context,
-                TransactionType.expense,
-                'All',
-                Icons.list,
-                AppColors.neutral,
-                isAll: true,
-              ),
-              const Spacer(),
-              // Clear filters button
-              TextButton.icon(
-                onPressed: onClearFilters,
-                icon: const Icon(Icons.clear_all),
-                label: const Text('Clear'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+          // Type filter tabs in a styled container
+          Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(4),
+            child: Row(
+              children: [
+                _buildFilterTab(
+                  context: context,
+                  label: 'All',
+                  icon: Icons.all_inclusive,
+                  isSelected: isAllSelected,
+                  onSelected: onClearFilters,
                 ),
-              ),
-            ],
+                _buildFilterTab(
+                  context: context,
+                  label: 'Expenses',
+                  icon: Icons.arrow_downward,
+                  isSelected: isExpenseSelected,
+                  color: AppColors.expense,
+                  onSelected: () => onTypeChanged(TransactionType.expense),
+                ),
+                _buildFilterTab(
+                  context: context,
+                  label: 'Income',
+                  icon: Icons.arrow_upward,
+                  isSelected: isIncomeSelected,
+                  color: AppColors.income,
+                  onSelected: () => onTypeChanged(TransactionType.income),
+                ),
+              ],
+            ),
           ),
+
           const SizedBox(height: 16),
-          // Advanced filters
+
+          // Additional filters
+          Text(
+            'Additional Filters',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+
+          const SizedBox(height: 8),
+
+          // Filter buttons
           Row(
             children: [
               // Category filter
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.category),
-                  label: const Text('Category'),
+                child: _buildFilterButton(
+                  context: context,
+                  label: 'Category',
+                  icon: Icons.category,
                   onPressed: () => _showCategoryPicker(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Date range filter
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.date_range),
-                  label: const Text('Date Range'),
+                child: _buildFilterButton(
+                  context: context,
+                  label: 'Date Range',
+                  icon: Icons.calendar_today,
                   onPressed: () => _showDateRangePicker(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -131,38 +151,75 @@ class TransactionFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildTypeFilterChip(
-    BuildContext context,
-    TransactionType type,
-    String label,
-    IconData icon,
-    Color color, {
-    bool isAll = false,
+  Widget _buildFilterTab({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onSelected,
+    Color? color,
   }) {
-    final isSelected =
-        isAll ? selectedType == type : selectedType == type && !isAll;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return FilterChip(
-      selected: isSelected,
-      label: Text(label),
-      avatar: Icon(
-        icon,
-        size: 18,
-        color: isSelected ? Theme.of(context).colorScheme.onPrimary : color,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onSelected,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : color ?? colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: isSelected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+              ),
+            ],
+          ),
+        ),
       ),
-      onSelected: (selected) {
-        if (selected) {
-          onTypeChanged(type);
-        }
-      },
-      backgroundColor: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer
-          : Theme.of(context).colorScheme.surface,
-      selectedColor: Theme.of(context).colorScheme.primary,
-      labelStyle: TextStyle(
-        color: isSelected
-            ? Theme.of(context).colorScheme.onPrimary
-            : Theme.of(context).colorScheme.onSurface,
+    );
+  }
+
+  Widget _buildFilterButton({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
@@ -181,65 +238,128 @@ class TransactionFilterBar extends StatelessWidget {
 
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text(
-                  'Select Category',
-                  style: Theme.of(context).textTheme.titleLarge,
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              const Divider(),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    final color =
-                        AppColors.categoryColors[category.toLowerCase()] ??
-                            AppColors.categoryColors['other']!;
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: color.withOpacity(0.2),
-                        child: Icon(
-                          index == 0
-                              ? Icons.restaurant
-                              : index == 1
-                                  ? Icons.directions_car
-                                  : index == 2
-                                      ? Icons.shopping_cart
-                                      : index == 3
-                                          ? Icons.receipt
-                                          : index == 4
-                                              ? Icons.movie
-                                              : index == 5
-                                                  ? Icons.medical_services
-                                                  : Icons.category,
-                          color: color,
-                        ),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Select Category',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      title: Text(category),
-                      onTap: () {
-                        onCategorySelected(category);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                const Divider(),
+
+                // Categories list
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final color =
+                          AppColors.categoryColors[category.toLowerCase()] ??
+                              AppColors.categoryColors['other']!;
+
+                      IconData categoryIcon;
+                      switch (index) {
+                        case 0:
+                          categoryIcon = Icons.restaurant;
+                        case 1:
+                          categoryIcon = Icons.directions_car;
+                        case 2:
+                          categoryIcon = Icons.shopping_cart;
+                        case 3:
+                          categoryIcon = Icons.receipt;
+                        case 4:
+                          categoryIcon = Icons.movie;
+                        case 5:
+                          categoryIcon = Icons.medical_services;
+                        default:
+                          categoryIcon = Icons.category;
+                      }
+
+                      return InkWell(
+                        onTap: () {
+                          onCategorySelected(category);
+                          Navigator.pop(context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  categoryIcon,
+                                  color: color,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                category,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const Spacer(),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -263,6 +383,13 @@ class TransactionFilterBar extends StatelessWidget {
             colorScheme: Theme.of(context).colorScheme.copyWith(
                   primary: Theme.of(context).colorScheme.primary,
                 ),
+            datePickerTheme: DatePickerThemeData(
+              headerBackgroundColor: Theme.of(context).colorScheme.primary,
+              headerForegroundColor: Theme.of(context).colorScheme.onPrimary,
+              rangePickerBackgroundColor: Theme.of(context).colorScheme.surface,
+              rangePickerSurfaceTintColor:
+                  Theme.of(context).colorScheme.surfaceTint,
+            ),
           ),
           child: child!,
         );
