@@ -26,11 +26,54 @@ class _TransactionDetailScreenState
     extends ConsumerState<TransactionDetailScreen> {
   late Stream<TransactionModel?> _transactionStream;
   bool _isLoading = false;
+  bool _isEditing = false;
+
+  // Controllers for editing
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
+
+  // Current editing values
+  TransactionType _selectedType = TransactionType.expense;
+  String _selectedCategory = 'Other';
+  DateTime _selectedDate = DateTime.now();
+  bool _isRecurring = false;
+  String? _recurringFrequency;
+
+  // Form key
+  final _formKey = GlobalKey<FormState>();
+
+  // Pre-defined categories
+  final List<String> _categories = [
+    'Food',
+    'Transport',
+    'Shopping',
+    'Bills',
+    'Entertainment',
+    'Health',
+    'Other',
+  ];
+
+  // Recurring frequency options
+  final List<String> _frequencies = [
+    'Daily',
+    'Weekly',
+    'Monthly',
+    'Yearly',
+  ];
 
   @override
   void initState() {
     super.initState();
     _fetchTransactionDetails();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   void _fetchTransactionDetails() {
@@ -56,8 +99,87 @@ class _TransactionDetailScreenState
     }
   }
 
-  void _handleEditTransaction(TransactionModel transaction) {
-    context.push('/transactions/edit/${transaction.id}');
+  void _toggleEditMode(TransactionModel transaction) {
+    if (_isEditing) {
+      // Exit edit mode
+      setState(() {
+        _isEditing = false;
+      });
+    } else {
+      // Enter edit mode and initialize controllers
+      _titleController.text = transaction.title;
+      _amountController.text = transaction.amount.toString();
+      _descriptionController.text = transaction.description ?? '';
+      _selectedType = transaction.type;
+      _selectedCategory = transaction.category;
+      _selectedDate = transaction.date;
+      _isRecurring = transaction.isRecurring;
+      _recurringFrequency = transaction.recurringFrequency;
+
+      setState(() {
+        _isEditing = true;
+      });
+    }
+  }
+
+  Future<void> _saveChanges(TransactionModel transaction) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Create updated transaction
+      final updatedTransaction = transaction.copyWith(
+        title: _titleController.text,
+        amount: double.parse(_amountController.text),
+        category: _selectedCategory,
+        type: _selectedType,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
+        date: _selectedDate,
+        isRecurring: _isRecurring,
+        recurringFrequency: _isRecurring ? _recurringFrequency : null,
+      );
+
+      // Update transaction
+      await ref
+          .read(transactionControllerProvider.notifier)
+          .updateTransaction(updatedTransaction);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Transaction updated successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Exit edit mode
+      setState(() {
+        _isEditing = false;
+        _isLoading = false;
+      });
+    } on Exception catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _handleDeleteTransaction(TransactionModel transaction) async {
@@ -131,13 +253,6 @@ class _TransactionDetailScreenState
         title: const Text('Transaction Details'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit',
-            onPressed: () {
-              context.push('/transactions/edit/${widget.transactionId}');
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.delete),
             tooltip: 'Delete',
             onPressed: () {
@@ -178,9 +293,292 @@ class _TransactionDetailScreenState
                 }
 
                 final transaction = snapshot.data!;
-                return _buildTransactionDetails(context, transaction);
+                return _isEditing
+                    ? _buildEditForm(context, transaction)
+                    : _buildTransactionDetails(context, transaction);
               },
             ),
+    );
+  }
+
+  Widget _buildEditForm(BuildContext context, TransactionModel transaction) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title section
+            Text(
+              'Edit Transaction',
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Title field
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                hintText: 'Enter transaction title',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a title';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Amount field
+            TextFormField(
+              controller: _amountController,
+              decoration: const InputDecoration(
+                labelText: 'Amount',
+                hintText: 'Enter amount',
+                prefixText: '\$ ',
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an amount';
+                }
+                try {
+                  final amount = double.parse(value);
+                  if (amount <= 0) {
+                    return 'Amount must be greater than zero';
+                  }
+                } catch (e) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Description field
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Description (Optional)',
+                hintText: 'Enter description',
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 24),
+
+            // Transaction type
+            Text(
+              'Transaction Type',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<TransactionType>(
+              segments: const [
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.expense,
+                  label: Text('Expense'),
+                  icon: Icon(Icons.arrow_downward),
+                ),
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.income,
+                  label: Text('Income'),
+                  icon: Icon(Icons.arrow_upward),
+                ),
+              ],
+              selected: {_selectedType},
+              onSelectionChanged: (Set<TransactionType> newSelection) {
+                setState(() {
+                  _selectedType = newSelection.first;
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Category selection
+            Text(
+              'Category',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              items: _categories.map((category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Date picker
+            Text(
+              'Date',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () async {
+                final pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (pickedDate != null) {
+                  setState(() {
+                    _selectedDate = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      _selectedDate.hour,
+                      _selectedDate.minute,
+                    );
+                  });
+                }
+              },
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(DateFormat.yMMMd().format(_selectedDate)),
+                    const Icon(Icons.calendar_today),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Time picker
+            InkWell(
+              onTap: () async {
+                final pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.fromDateTime(_selectedDate),
+                );
+                if (pickedTime != null) {
+                  setState(() {
+                    _selectedDate = DateTime(
+                      _selectedDate.year,
+                      _selectedDate.month,
+                      _selectedDate.day,
+                      pickedTime.hour,
+                      pickedTime.minute,
+                    );
+                  });
+                }
+              },
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(DateFormat.jm().format(_selectedDate)),
+                    const Icon(Icons.access_time),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Recurring options
+            Row(
+              children: [
+                Checkbox(
+                  value: _isRecurring,
+                  onChanged: (value) {
+                    setState(() {
+                      _isRecurring = value ?? false;
+                    });
+                  },
+                ),
+                const Text('Recurring Payment'),
+              ],
+            ),
+
+            // Recurring frequency (if recurring)
+            if (_isRecurring) ...[
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _recurringFrequency ?? _frequencies.first,
+                decoration: const InputDecoration(
+                  labelText: 'Frequency',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                items: _frequencies.map((frequency) {
+                  return DropdownMenuItem<String>(
+                    value: frequency,
+                    child: Text(frequency),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _recurringFrequency = value;
+                  });
+                },
+              ),
+            ],
+
+            const SizedBox(height: 32),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _toggleEditMode(transaction),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => _saveChanges(transaction),
+                    child: const Text('Save Changes'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -370,32 +768,33 @@ class _TransactionDetailScreenState
 
                 const SizedBox(height: 24),
 
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _handleEditTransaction(transaction),
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
+                // Edit button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => _toggleEditMode(transaction),
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Transaction'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => _handleDeleteTransaction(transaction),
-                        icon: const Icon(Icons.delete),
-                        label: const Text('Delete'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.error,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Delete button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _handleDeleteTransaction(transaction),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Delete Transaction'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.error,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

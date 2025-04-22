@@ -75,6 +75,12 @@ GoRouter router(Ref ref) {
           transactionId: state.pathParameters['id']!,
         ),
       ),
+      GoRoute(
+        path: '/transactions/edit/:id',
+        builder: (context, state) => TransactionDetailScreen(
+          transactionId: state.pathParameters['id']!,
+        ),
+      ),
     ],
   );
 }

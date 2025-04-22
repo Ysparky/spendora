@@ -246,7 +246,7 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen>
   }
 
   void _editTransaction(TransactionModel transaction) {
-    context.push('/transactions/edit/${transaction.id}');
+    context.push('/transactions/details/${transaction.id}');
   }
 
   @override
