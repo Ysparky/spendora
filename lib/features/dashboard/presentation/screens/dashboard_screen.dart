@@ -99,6 +99,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.query_stats),
+                tooltip: 'Statistics',
+                onPressed: () {
+                  context.push('/statistics');
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.person),
                 tooltip: 'Profile',
                 onPressed: () {

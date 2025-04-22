@@ -9,6 +9,7 @@ import 'package:spendora/features/auth/presentation/screens/login_screen.dart';
 import 'package:spendora/features/auth/presentation/screens/register_screen.dart';
 import 'package:spendora/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:spendora/features/profile/presentation/screens/profile_screen.dart';
+import 'package:spendora/features/statistics/presentation/screens/statistics_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/add_transaction_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/transaction_detail_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/transaction_list_screen.dart';
@@ -80,6 +81,10 @@ GoRouter router(Ref ref) {
         builder: (context, state) => TransactionDetailScreen(
           transactionId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/statistics',
+        builder: (context, state) => const StatisticsScreen(),
       ),
     ],
   );
