@@ -10,6 +10,7 @@ import 'package:spendora/features/auth/presentation/screens/register_screen.dart
 import 'package:spendora/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:spendora/features/profile/presentation/screens/profile_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/add_transaction_screen.dart';
+import 'package:spendora/features/transactions/presentation/screens/transaction_detail_screen.dart';
 import 'package:spendora/features/transactions/presentation/screens/transaction_list_screen.dart';
 
 part 'app_router.g.dart';
@@ -67,6 +68,12 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/transactions/add',
         builder: (context, state) => const AddTransactionScreen(),
+      ),
+      GoRoute(
+        path: '/transactions/details/:id',
+        builder: (context, state) => TransactionDetailScreen(
+          transactionId: state.pathParameters['id']!,
+        ),
       ),
     ],
   );
